@@ -25,7 +25,7 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-6 bg-white border-b border-gray-200">
+      <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200">
         <div className="flex items-center gap-2">
           <img
             src="/logo.png"
@@ -57,8 +57,8 @@ export default function ForgotPassword() {
       <div className="flex items-center justify-between max-w-7xl mx-auto px-8 py-12 gap-12">
         {/* Left Section - Hero */}
         <div className="flex-1">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">Reset Your Password</h2>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+          <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">Reset Your Password</h2>
+          <p className="text-md text-gray-600 mb-8 leading-relaxed">
             Enter your email address and we'll send you a link to reset your password.
           </p>
 
@@ -82,7 +82,7 @@ export default function ForgotPassword() {
         {/* Right Section - Reset Form */}
         <div className="flex-1">
           <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password?</h3>
             <p className="text-gray-600 mb-8">Enter your email to reset your password</p>
 
             {isSubmitted ? (

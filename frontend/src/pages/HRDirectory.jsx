@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const HRDirectory = () => {
+  const navigate = useNavigate();
   const [selectedHRs, setSelectedHRs] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   
@@ -125,7 +127,8 @@ const HRDirectory = () => {
             </svg>
             Export
           </button>
-          <button
+          <button 
+            onClick={() => navigate('/hr-directory/create')}
             type="button"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >

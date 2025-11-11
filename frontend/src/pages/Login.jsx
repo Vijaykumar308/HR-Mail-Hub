@@ -38,9 +38,9 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center py-8 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center">
           <img
             className="h-24 w-auto max-w-xs object-contain"
             src="/logo.png"
@@ -55,10 +55,17 @@ const Login = ({ onLogin }) => {
             }}
           />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        {/* <p className="mt-2 text-center text-sm text-gray-600">
           Please sign in to your account
-        </p>
+        </p> */}
+
+         <div className="text-sm mt-6 text-center">
+                  <span className="text-gray-600">Don't have an account? </span>
+                  <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500">
+                    Sign up
+                  </Link>
+                </div>
       </div>
 
       {error && (
@@ -132,10 +139,13 @@ const Login = ({ onLogin }) => {
                 </label>
               </div>
 
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
-                </Link>
+              <div className="flex flex-col space-y-2">
+                <div className="text-sm">
+                  <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot your password?
+                  </Link>
+                </div>
+               
               </div>
             </div>
 
