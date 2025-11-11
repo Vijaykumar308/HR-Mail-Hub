@@ -1,63 +1,215 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Pagination from '../components/Pagination';
 
 const HRDirectory = () => {
   const navigate = useNavigate();
   const [selectedHRs, setSelectedHRs] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   
-  // Sample HR data - in a real app, this would come from an API
+  // Sample HR data with Indian companies and female HRs
   const [hrContacts, setHrContacts] = useState([
     {
       id: 1,
-      company: 'Google',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@google.com',
-      industry: 'Technology',
-      location: 'Mountain View, CA',
-      lastContacted: '2023-10-15',
+      company: 'TCS',
+      name: 'Priya Sharma',
+      email: 'priya.sharma@tcs.com',
+      industry: 'IT Services',
+      location: 'Mumbai, India',
+      lastContacted: '2023-11-10',
+      resumesShared: 3,
       status: 'active'
     },
     {
       id: 2,
-      company: 'Microsoft',
-      name: 'Michael Chen',
-      email: 'michael.c@microsoft.com',
+      company: 'Infosys',
+      name: 'Ananya Patel',
+      email: 'ananya.p@infosys.com',
       industry: 'Technology',
-      location: 'Redmond, WA',
-      lastContacted: '2023-10-10',
-      status: 'pending'
+      location: 'Bengaluru, India',
+      lastContacted: '2023-11-08',
+      status: 'active'
     },
     {
       id: 3,
-      company: 'Amazon',
-      name: 'David Kim',
-      email: 'david.k@amazon.com',
-      industry: 'E-commerce',
-      location: 'Seattle, WA',
-      lastContacted: '2023-10-05',
-      status: 'active'
+      company: 'Wipro',
+      name: 'Meera Reddy',
+      email: 'meera.reddy@wipro.com',
+      industry: 'IT Services',
+      location: 'Pune, India',
+      lastContacted: '2023-11-05',
+      status: 'pending'
     },
     {
       id: 4,
-      company: 'Netflix',
-      name: 'Emily Rodriguez',
-      email: 'emily.r@netflix.com',
-      industry: 'Entertainment',
-      location: 'Los Gatos, CA',
-      lastContacted: '2023-09-28',
-      status: 'inactive'
+      company: 'HCL Technologies',
+      name: 'Kavita Verma',
+      email: 'kavita.v@hcl.com',
+      industry: 'Technology',
+      location: 'Noida, India',
+      lastContacted: '2023-11-12',
+      status: 'active'
     },
     {
       id: 5,
-      company: 'Airbnb',
-      name: 'James Wilson',
-      email: 'james.w@airbnb.com',
-      industry: 'Hospitality',
-      location: 'San Francisco, CA',
-      lastContacted: '2023-09-20',
+      company: 'Tech Mahindra',
+      name: 'Divya Iyer',
+      email: 'divya.iyer@techmahindra.com',
+      industry: 'IT Services',
+      location: 'Hyderabad, India',
+      lastContacted: '2023-11-01',
       status: 'active'
     },
+    {
+      id: 6,
+      company: 'Accenture India',
+      name: 'Neha Kapoor',
+      email: 'neha.kapoor@accenture.com',
+      industry: 'Consulting',
+      location: 'Gurugram, India',
+      lastContacted: '2023-10-28',
+      status: 'inactive'
+    },
+    {
+      id: 7,
+      company: 'HDFC Bank',
+      name: 'Shreya Menon',
+      email: 'shreya.m@hdfcbank.com',
+      industry: 'Banking',
+      location: 'Mumbai, India',
+      lastContacted: '2023-11-15',
+      status: 'active'
+    },
+    {
+      id: 8,
+      company: 'ICICI Bank',
+      name: 'Aishwarya Nair',
+      email: 'aishwarya.n@icicibank.com',
+      industry: 'Banking',
+      location: 'Mumbai, India',
+      lastContacted: '2023-11-14',
+      status: 'active'
+    },
+    {
+      id: 9,
+      company: 'Flipkart',
+      name: 'Aditi Joshi',
+      email: 'aditi.joshi@flipkart.com',
+      industry: 'E-commerce',
+      location: 'Bengaluru, India',
+      lastContacted: '2023-11-09',
+      status: 'active'
+    },
+    {
+      id: 10,
+      company: 'Zomato',
+      name: 'Pooja Gupta',
+      email: 'pooja.g@zomato.com',
+      industry: 'Food Tech',
+      location: 'Gurugram, India',
+      lastContacted: '2023-10-25',
+      status: 'pending'
+    },
+    {
+      id: 11,
+      company: 'Byju\'s',
+      name: 'Riya Malhotra',
+      email: 'riya.m@byjus.com',
+      industry: 'EdTech',
+      location: 'Bengaluru, India',
+      lastContacted: '2023-11-02',
+      status: 'active'
+    },
+    {
+      id: 12,
+      company: 'Airtel',
+      name: 'Anjali Deshpande',
+      email: 'anjali.d@airtel.in',
+      industry: 'Telecom',
+      location: 'New Delhi, India',
+      lastContacted: '2023-10-30',
+      status: 'active'
+    },
+    {
+      id: 13,
+      company: 'Reliance Jio',
+      name: 'Kiran Nair',
+      email: 'kiran.n@jio.com',
+      industry: 'Telecom',
+      location: 'Mumbai, India',
+      lastContacted: '2023-11-13',
+      status: 'active'
+    },
+    {
+      id: 14,
+      company: 'Mahindra & Mahindra',
+      name: 'Shweta Rao',
+      email: 'shweta.rao@mahindra.com',
+      industry: 'Automobile',
+      location: 'Mumbai, India',
+      lastContacted: '2023-10-22',
+      status: 'inactive'
+    },
+    {
+      id: 15,
+      company: 'Tata Motors',
+      name: 'Nandini Choudhary',
+      email: 'nandini.c@tatamotors.com',
+      industry: 'Automobile',
+      location: 'Pune, India',
+      lastContacted: '2023-11-07',
+      status: 'active'
+    },
+    {
+      id: 16,
+      company: 'Wipro GE Healthcare',
+      name: 'Ananya Reddy',
+      email: 'ananya.r@wiproge.com',
+      industry: 'Healthcare',
+      location: 'Bengaluru, India',
+      lastContacted: '2023-10-18',
+      status: 'active'
+    },
+    {
+      id: 17,
+      company: 'Apollo Hospitals',
+      name: 'Megha Srinivasan',
+      email: 'megha.s@apollohospitals.com',
+      industry: 'Healthcare',
+      location: 'Chennai, India',
+      lastContacted: '2023-11-03',
+      status: 'pending'
+    },
+    {
+      id: 18,
+      company: 'Asian Paints',
+      name: 'Shalini Kapoor',
+      email: 'shalini.k@asianpaints.com',
+      industry: 'Manufacturing',
+      location: 'Mumbai, India',
+      lastContacted: '2023-10-29',
+      status: 'active'
+    },
+    {
+      id: 19,
+      company: 'ITC Limited',
+      name: 'Rashmi Iyer',
+      email: 'rashmi.iyer@itc.in',
+      industry: 'FMCG',
+      location: 'Kolkata, India',
+      lastContacted: '2023-11-06',
+      status: 'active'
+    },
+    {
+      id: 20,
+      company: 'Larsen & Toubro',
+      name: 'Anita Desai',
+      email: 'anita.desai@larsentoubro.com',
+      industry: 'Construction',
+      location: 'Mumbai, India',
+      lastContacted: '2023-10-20',
+      status: 'active'
+    }
   ]);
 
   const [filters, setFilters] = useState({
@@ -66,9 +218,36 @@ const HRDirectory = () => {
     status: ''
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // Number of items per page
+
   const industries = [...new Set(hrContacts.map(hr => hr.industry))];
   const locations = [...new Set(hrContacts.map(hr => hr.location))];
   const statuses = ['active', 'pending', 'inactive'];
+
+  // Filter HRs based on selected filters
+  const filteredHRs = useMemo(() => {
+    const filtered = hrContacts.filter(hr => {
+      return (
+        (filters.industry === '' || hr.industry === filters.industry) &&
+        (filters.location === '' || hr.location === filters.location) &&
+        (filters.status === '' || hr.status === filters.status)
+      );
+    });
+    
+    // Reset to first page when filters change
+    setCurrentPage(1);
+    return filtered;
+  }, [hrContacts, filters.industry, filters.location, filters.status]);
+
+  // Get current items for pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredHRs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredHRs.length / itemsPerPage);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleSelectHR = (id) => {
     setSelectedHRs(prev => 
@@ -78,13 +257,28 @@ const HRDirectory = () => {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedHRs([]);
+  // Update selectAll state based on current page's selection
+  useEffect(() => {
+    if (currentItems.length > 0) {
+      const allCurrentPageSelected = currentItems.every(item => 
+        selectedHRs.includes(item.id)
+      );
+      setSelectAll(allCurrentPageSelected);
     } else {
-      setSelectedHRs(hrContacts.map(hr => hr.id));
+      setSelectAll(false);
     }
-    setSelectAll(!selectAll);
+  }, [currentPage, selectedHRs, currentItems]);
+
+  const handleSelectAll = () => {
+    const currentPageIds = currentItems.map(item => item.id);
+    
+    if (selectAll) {
+      // Deselect all items on the current page
+      setSelectedHRs(prev => prev.filter(id => !currentPageIds.includes(id)));
+    } else {
+      // Select all items on the current page
+      setSelectedHRs(prev => [...new Set([...prev, ...currentPageIds])]);
+    }
   };
 
   const handleFilterChange = (e) => {
@@ -95,16 +289,9 @@ const HRDirectory = () => {
     }));
   };
 
-  const filteredHRs = hrContacts.filter(hr => {
-    return (
-      (filters.industry === '' || hr.industry === filters.industry) &&
-      (filters.location === '' || hr.location === filters.location) &&
-      (filters.status === '' || hr.status === filters.status)
-    );
-  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
         <div className="mt-4 sm:mt-0 flex space-x-3">
@@ -223,10 +410,9 @@ const HRDirectory = () => {
       </div>
 
       {/* HR Contacts Table */}
-      <div className="flex flex-col">
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+      <div className="flex flex-col w-full overflow-x-auto">
+        <div className="inline-block min-w-full py-2 align-middle">
+          <div className="overflow-hidden shadow border-b border-gray-200 sm:rounded-lg">
               <div className="bg-white px-4 py-3 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -272,13 +458,16 @@ const HRDirectory = () => {
                       Status
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <span className="sr-only">Actions</span>
+                      Last Contacted
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Resumes Shared
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredHRs.map((hr) => (
-                    <tr key={hr.id} className={selectedHRs.includes(hr.id) ? 'bg-gray-50' : 'bg-white'}>
+                  {currentItems.map((hr) => (
+                    <tr key={hr.id} className={selectedHRs.includes(hr.id) ? 'bg-gray-50' : 'hover:bg-gray-50'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
@@ -313,19 +502,29 @@ const HRDirectory = () => {
                           {hr.status.charAt(0).toUpperCase() + hr.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button className="text-primary-600 hover:text-primary-900 mr-4">Edit</button>
-                        <button className="text-red-600 hover:text-red-900">Delete</button>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">{new Date(hr.lastContacted).toLocaleDateString()}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900 font-medium">{hr.resumesShared || 0}</div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              
+              {/* Pagination */}
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <Pagination 
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={paginate}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
