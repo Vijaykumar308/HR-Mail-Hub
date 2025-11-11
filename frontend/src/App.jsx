@@ -11,6 +11,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import HRDirectoryCreate from './pages/HRDirectoryCreate';
 
 // A wrapper for protected routes
 const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
@@ -21,7 +22,7 @@ const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   // Check if user is already logged in (e.g., from localStorage)
   useEffect(() => {
@@ -30,7 +31,7 @@ function App() {
       setIsAuthenticated(true);
     }
   }, []);
-
+ 
   const handleLogin = (token) => {
     localStorage.setItem('token', token);
     setIsAuthenticated(true);
@@ -51,9 +52,10 @@ function App() {
       {/* Protected routes */}
       <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
         <Route path="/" element={<Layout onLogout={handleLogout} />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="hr-directory" element={<HRDirectory />} />
+          <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
           <Route path="resumes" element={<MyResumes />} />
           <Route path="send-applications" element={<SendApplications />} />
           <Route path="templates" element={<MessageTemplate />} />
