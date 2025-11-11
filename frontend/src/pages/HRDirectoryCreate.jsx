@@ -77,12 +77,13 @@ const HRDirectoryCreate = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center">
         <div className="flex items-center space-x-4">
           <button
             onClick={() => navigate(-1)}
-            className="p-1 rounded-full hover:bg-gray-100"
+            className="p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            aria-label="Go back"
           >
             <svg className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -93,7 +94,7 @@ const HRDirectoryCreate = () => {
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
           <div className="space-y-5">
             {/* Basic Info Section */}
             <div className="space-y-1">
