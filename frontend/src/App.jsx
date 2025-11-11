@@ -9,6 +9,7 @@ import MessageTemplate from './pages/MessageTemplate';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 // A wrapper for protected routes
 const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
@@ -43,6 +44,7 @@ function App() {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
       
       {/* Protected routes */}
       <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
