@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../components/Pagination';
 
@@ -257,13 +257,28 @@ const HRDirectory = () => {
     );
   };
 
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedHRs([]);
+  // Update selectAll state based on current page's selection
+  useEffect(() => {
+    if (currentItems.length > 0) {
+      const allCurrentPageSelected = currentItems.every(item => 
+        selectedHRs.includes(item.id)
+      );
+      setSelectAll(allCurrentPageSelected);
     } else {
-      setSelectedHRs(hrContacts.map(hr => hr.id));
+      setSelectAll(false);
     }
-    setSelectAll(!selectAll);
+  }, [currentPage, selectedHRs, currentItems]);
+
+  const handleSelectAll = () => {
+    const currentPageIds = currentItems.map(item => item.id);
+    
+    if (selectAll) {
+      // Deselect all items on the current page
+      setSelectedHRs(prev => prev.filter(id => !currentPageIds.includes(id)));
+    } else {
+      // Select all items on the current page
+      setSelectedHRs(prev => [...new Set([...prev, ...currentPageIds])]);
+    }
   };
 
   const handleFilterChange = (e) => {
