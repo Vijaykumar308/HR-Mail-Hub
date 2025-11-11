@@ -10,6 +10,7 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 
 // A wrapper for protected routes
 const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
@@ -45,6 +46,7 @@ function App() {
       {/* Public routes */}
       <Route path="/login" element={<Login onLogin={handleLogin} />} />
       <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       
       {/* Protected routes */}
       <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>

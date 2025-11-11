@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const Login = ({ onLogin }) => {
@@ -38,11 +38,24 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Welcome Back
-        </h2>
+        <div className="flex justify-center mb-6">
+          <img
+            className="h-24 w-auto max-w-xs object-contain"
+            src="/logo.png"
+            alt="The HR Hub Logo"
+            style={{
+              maxHeight: '120px',
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              display: 'block',
+              mixBlendMode: 'multiply'
+            }}
+          />
+        </div>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Please sign in to your account
         </p>
@@ -120,9 +133,9 @@ const Login = ({ onLogin }) => {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
                   Forgot your password?
-                </a>
+                </Link>
               </div>
             </div>
 

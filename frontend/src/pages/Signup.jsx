@@ -64,10 +64,20 @@ export default function Signup() {
       {/* Header */}
       <header className="flex items-center justify-between px-8 py-6 bg-white border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">📋</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">JobTrackr</h1>
+          <img
+            src="/logo.png"
+            alt="The HR Hub Logo"
+            className="h-12 w-auto object-contain"
+            style={{
+              maxHeight: '60px',
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '200px',
+              display: 'block',
+              mixBlendMode: 'multiply'
+            }}
+          />
+          <h1 className="text-2xl font-bold text-gray-900 hidden sm:block">The HR Hub</h1>
         </div>
         <div className="flex items-center gap-4">
           <p className="text-gray-600">Already have an account?</p>
