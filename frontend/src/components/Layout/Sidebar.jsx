@@ -5,7 +5,7 @@ const navItems = [
   { name: 'Dashboard', icon: '📊', path: '/dashboard' },
   { name: 'HR Directory', icon: '📇', path: '/hr-directory' },
   { name: 'My Resumes', icon: '📄', path: '/resumes' },
-  { name: 'Send Applications', icon: '✉️', path: '/send-applications' },
+  // { name: 'Send Applications', icon: '✉️', path: '/send-applications' },
   { name: 'Message Template', icon: '✏️', path: '/templates' },
   { name: 'Analytics', icon: '📈', path: '/analytics' },
   { name: 'Settings', icon: '⚙️', path: '/settings' },
