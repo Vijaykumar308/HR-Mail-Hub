@@ -1,0 +1,62 @@
+const ResumeService = require('../services/resume.service');
+const AppError = require('../utils/appError');
+const catchAsync = require('../utils/catchAsync');
+
+// @desc    Upload a resume
+// @route   POST /api/v1/resumes
+// @access  Private
+exports.uploadResume = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError('No file uploaded', 400));
+  }
+
+  const resume = await ResumeService.uploadResume(req.user, req.file);
+  
+  res.status(201).json({
+    status: 'success',
+    data: {
+      resume
+    }
+  });
+});
+
+// @desc    Get all resumes for current user
+// @route   GET /api/v1/resumes
+// @access  Private
+exports.getUserResumes = catchAsync(async (req, res, next) => {
+  const resumes = await ResumeService.getUserResumes(req.user._id);
+  
+  res.status(200).json({
+    status: 'success',
+    results: resumes.length,
+    data: {
+      resumes
+    }
+  });
+});
+
+// @desc    Set a resume as active
+// @route   PATCH /api/v1/resumes/:id/active
+// @access  Private
+exports.setActiveResume = catchAsync(async (req, res, next) => {
+  const resume = await ResumeService.setActiveResume(req.user._id, req.params.id);
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      resume
+    }
+  });
+});
+
+// @desc    Delete a resume
+// @route   DELETE /api/v1/resumes/:id
+// @access  Private
+exports.deleteResume = catchAsync(async (req, res, next) => {
+  await ResumeService.deleteResume(req.user._id, req.params.id);
+  
+  res.status(204).json({
+    status: 'success',
+    data: null
+  });
+});

@@ -18,6 +18,7 @@ router.post('/auth/login', authController.login);
 
 // API routes
 router.use('/users', require('./user.routes'));
+router.use('/resumes', require('./resume.routes'));
 
 // Handle 404 for API routes
 router.use((req, res) => {

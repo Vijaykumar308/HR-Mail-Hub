@@ -16,6 +16,7 @@ const globalErrorHandler = require('./middlewares/errorHandler');
 
 // Import routes
 const apiRoutes = require('./routes');
+const path = require('path');
 
 const app = express();
 
@@ -55,7 +56,7 @@ app.use((req, res, next) => {
 // Custom NoSQL injection and XSS protection
 app.use((req, res, next) => {
   // Skip for auth routes to prevent issues with password hashing
-  if (req.originalUrl.startsWith('/api/v1/auth')) {
+  if (req.originalUrl.startsWith('/api/v1/')) {
     return next();
   }
 
@@ -119,7 +120,23 @@ app.use('/api', limiter);
 app.use(compression());
 
 // 3) ROUTES
-app.use('/api/v1', apiRoutes);
+// API v1 routes
+const v1Router = express.Router();
+v1Router.use('/users', require('./routes/user.routes'));
+v1Router.use('/resumes', require('./routes/resume.routes'));
+app.use('/api/v1', v1Router);
+
+// 4) Serve static files from uploads directory
+const uploadsDir = path.join(__dirname, '../../uploads');
+app.use('/uploads', express.static(uploadsDir));
+
+// Serve resume files with proper caching
+app.use('/resumes', express.static(path.join(uploadsDir, 'resumes'), {
+  setHeaders: (res, path) => {
+    // Cache control for resume files (1 day)
+    res.set('Cache-Control', 'public, max-age=86400');
+  }
+}));
 
 // Handle 404 - Not Found
 app.use((req, res, next) => {
