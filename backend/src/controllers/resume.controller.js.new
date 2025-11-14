@@ -1,7 +1,6 @@
 const ResumeService = require('../services/resume.service');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const path = require('path');
 
 // @desc    Upload a resume
 // @route   POST /api/v1/resumes
@@ -60,14 +59,4 @@ exports.deleteResume = catchAsync(async (req, res, next) => {
     status: 'success',
     data: null
   });
-});
-
-// @desc    Download a resume
-// @route   GET /api/v1/resumes/download/:id
-// @access  Private
-exports.downloadResume = catchAsync(async (req, res, next) => {
-  const resume = await ResumeService.downloadResume(req.user._id, req.params.id);
-  const filePath = path.join(__dirname, '../..', resume.filePath);
-  
-  res.download(filePath, resume.originalName);
 });
