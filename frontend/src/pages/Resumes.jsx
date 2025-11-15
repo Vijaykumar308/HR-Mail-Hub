@@ -1,11 +1,21 @@
 import { useState, useEffect } from 'react';
 import { resumeAPI } from '../services/resumeService';
-import { ResumeUpload } from '../components/ResumeUpload';
+import { toast } from 'react-toastify';
+import ResumeUpload from '../components/ResumeUpload';
 
 const Resumes = () => {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isProcessing, setIsProcessing] = useState({
+    delete: '',
+    download: '',
+    setActive: ''
+  });
+
+  // Fetch resumes on component mount
+  useEffect(() => {
+    fetchResumes();
+  }, []);
 
   const fetchResumes = async () => {
     try {
@@ -15,19 +25,15 @@ const Resumes = () => {
       if (result.success) {
         setResumes(result.data || []);
       } else {
-        setError(result.error || 'Failed to load resumes');
+        toast.error(result.error || 'Failed to load resumes');
       }
-    } catch (err) {
-      console.error('Error fetching resumes:', err);
-      setError('An error occurred while fetching resumes');
+    } catch (error) {
+      console.error('Error fetching resumes:', error);
+      toast.error('An error occurred while fetching resumes');
     } finally {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchResumes();
-  }, []);
 
   const handleDelete = async (resumeId) => {
     if (!window.confirm('Are you sure you want to delete this resume?')) {
@@ -35,28 +41,59 @@ const Resumes = () => {
     }
 
     try {
+      setIsProcessing(prev => ({ ...prev, delete: resumeId }));
       const result = await resumeAPI.deleteResume(resumeId);
       
       if (result.success) {
-        // Refresh the list
-        await fetchResumes();
+        toast.success('Resume deleted successfully');
+        fetchResumes(); // Refresh the list
       } else {
-        setError(result.error || 'Failed to delete resume');
+        toast.error(result.error || 'Failed to delete resume');
       }
-    } catch (err) {
-      console.error('Error deleting resume:', err);
-      setError('An error occurred while deleting the resume');
+    } catch (error) {
+      console.error('Error deleting resume:', error);
+      toast.error('An error occurred while deleting the resume');
+    } finally {
+      setIsProcessing(prev => ({ ...prev, delete: '' }));
     }
   };
 
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const handleDownload = async (resumeId, fileName) => {
+    try {
+      setIsProcessing(prev => ({ ...prev, download: resumeId }));
+      const result = await resumeAPI.downloadResume(resumeId, fileName);
+      
+      if (!result.success) {
+        toast.error(result.error || 'Failed to download resume');
+      }
+    } catch (error) {
+      console.error('Error downloading resume:', error);
+      toast.error('An error occurred while downloading the resume');
+    } finally {
+      setIsProcessing(prev => ({ ...prev, download: '' }));
+    }
   };
 
+  const handleSetActive = async (resumeId) => {
+    try {
+      setIsProcessing(prev => ({ ...prev, setActive: resumeId }));
+      const result = await resumeAPI.setActiveResume(resumeId);
+      
+      if (result.success) {
+        toast.success('Primary resume updated successfully');
+        fetchResumes(); // Refresh the list
+      } else {
+        toast.error(result.error || 'Failed to set active resume');
+      }
+    } catch (error) {
+      console.error('Error setting active resume:', error);
+      toast.error('An error occurred while updating the primary resume');
+    } finally {
+      setIsProcessing(prev => ({ ...prev, setActive: '' }));
+    }
+  };
+
+  // Format date to a readable string
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -73,26 +110,13 @@ const Resumes = () => {
         <h1 className="text-2xl font-bold text-gray-900">My Resumes</h1>
       </div>
 
+      {/* Upload Section */}
       <div className="bg-white shadow rounded-lg p-6 mb-8">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Upload New Resume</h2>
         <ResumeUpload onUploadSuccess={fetchResumes} />
       </div>
 
-      {error && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Resumes List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul className="divide-y divide-gray-200">
           {loading ? (
@@ -107,55 +131,52 @@ const Resumes = () => {
             </li>
           ) : (
             resumes.map((resume) => (
-              <li key={resume.id}>
-                <div className="px-4 py-4 flex items-center sm:px-6">
-                  <div className="min-w-0 flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div className="truncate">
-                      <div className="flex text-sm">
-                        <p className="font-medium text-primary-600 truncate">
+              <li key={resume._id} className="px-4 py-4 sm:px-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center min-w-0">
+                    <div className="min-w-0">
+                      <div className="flex items-center">
+                        <p className="text-sm font-medium text-gray-900 truncate">
                           {resume.originalName || 'Resume'}
                         </p>
-                        <p className="ml-3 flex-shrink-0 font-normal text-gray-500">
-                          {formatFileSize(resume.size)}
-                        </p>
+                        {resume.isActive && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Primary
+                          </span>
+                        )}
                       </div>
-                      <div className="mt-2 flex">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <p>
-                            Uploaded on{' '}
-                            <time dateTime={resume.uploadedAt}>
-                              {formatDate(resume.uploadedAt)}
-                            </time>
-                          </p>
-                        </div>
+                      <div className="mt-1 text-sm text-gray-500">
+                        Uploaded {formatDate(resume.uploadedAt)}
                       </div>
                     </div>
-                    <div className="mt-4 flex-shrink-0 sm:mt-0 sm:ml-5">
-                      <div className="flex space-x-3">
-                        <a
-                          href={resume.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                        >
-                          View
-                        </a>
-                        <a
-                          href={resume.url}
-                          download
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                        >
-                          Download
-                        </a>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(resume.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
+                  </div>
+                  <div className="ml-4 flex-shrink-0 flex space-x-2">
+                    {!resume.isActive && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetActive(resume._id)}
+                        disabled={isProcessing.setActive === resume._id}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                      >
+                        {isProcessing.setActive === resume._id ? 'Setting...' : 'Set as Primary'}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(resume._id, resume.originalName)}
+                      disabled={isProcessing.download === resume._id}
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                    >
+                      {isProcessing.download === resume._id ? 'Downloading...' : 'Download'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(resume._id)}
+                      disabled={isProcessing.delete === resume._id}
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      {isProcessing.delete === resume._id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </div>
                 </div>
               </li>
