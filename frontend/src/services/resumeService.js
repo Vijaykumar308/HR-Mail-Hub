@@ -33,8 +33,8 @@ export const resumeAPI = {
       console.error('Upload failed:', error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Failed to upload resume',
-        validationErrors: error.response?.data?.errors,
+        error: error?.data?.message || 'Failed to upload resume',
+        validationErrors: error?.data?.errors,
       };
     }
   },

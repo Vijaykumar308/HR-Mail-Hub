@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
 import HRDirectory from './pages/HRDirectory';
@@ -43,28 +45,31 @@ function App() {
   };
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login onLogin={handleLogin} />} />
-      <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      
-      {/* Protected routes */}
-      <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
-        <Route path="/" element={<Layout onLogout={handleLogout} />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="hr-directory" element={<HRDirectory />} />
-          <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
-          <Route path="resumes" element={<MyResumes />} />
-          {/* <Route path="send-applications" element={<SendApplications />} /> */}
-          <Route path="templates" element={<MessageTemplate />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    <>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
+          <Route path="/" element={<Layout onLogout={handleLogout} />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="hr-directory" element={<HRDirectory />} />
+            <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
+            <Route path="resumes" element={<MyResumes />} />
+            {/* <Route path="send-applications" element={<SendApplications />} /> */}
+            <Route path="templates" element={<MessageTemplate />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Route>
         </Route>
-      </Route>
-    </Routes>
+      </Routes>
+      <ToastContainer />
+    </>
   );
 }
 

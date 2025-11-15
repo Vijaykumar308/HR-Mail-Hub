@@ -40,11 +40,11 @@ const resumeSchema = new mongoose.Schema({
 // Index for faster querying
 resumeSchema.index({ user: 1, isActive: 1 });
 
-// Prevent users from having more than 5 resumes
+// Prevent users from having more than 3 resumes
 resumeSchema.statics.checkResumeLimit = async function(userId) {
   const count = await this.countDocuments({ user: userId });
-  if (count >= 5) {
-    const error = new Error('Maximum of 5 resumes allowed per user');
+  if (count >= 3) {
+    const error = new Error('Maximum of 3 resumes allowed per user');
     error.statusCode = 400;
     error.status = 'fail';
     error.isOperational = true;

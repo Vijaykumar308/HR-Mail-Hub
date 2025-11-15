@@ -5,8 +5,8 @@ const path = require('path');
 
 class ResumeService {
   static async uploadResume(user, file) {
-    // Check resume limit (optional - comment out to remove limit)
-    // await Resume.checkResumeLimit(user._id);
+    // Check resume limit
+    await Resume.checkResumeLimit(user._id);
 
     const resume = await Resume.create({
       user: user._id,

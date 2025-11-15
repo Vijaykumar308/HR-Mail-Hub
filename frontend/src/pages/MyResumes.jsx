@@ -2,24 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle, FiHardDrive, FiCalendar, FiStar } from 'react-icons/fi';
 import { resumeAPI } from '../services/resumeService';
 import { TrashIcon } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const MyResumes = () => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [resumes, setResumes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Auto-hide success message after 3 seconds
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => {
-        setSuccess('');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
 
   // Fetch resumes on component mount
   useEffect(() => {
@@ -33,7 +22,7 @@ const MyResumes = () => {
         }
       } catch (err) {
         console.error('Failed to fetch resumes:', err);
-        setError('Failed to load resumes. Please try again.');
+        toast.error('Failed to load resumes. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -49,30 +38,27 @@ const MyResumes = () => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(selectedFile.type)) {
-      setError('Please upload a PDF, DOC, or DOCX file');
+      toast.error('Please upload a PDF, DOC, or DOCX file');
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (selectedFile.size > maxSize) {
-      setError('File size should be less than 5MB');
+      toast.error('File size should be less than 5MB');
       return;
     }
 
     setFile(selectedFile);
-    setError('');
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a file to upload');
+      toast.error('Please select a file to upload');
       return;
     }
 
     setIsUploading(true);
-    setError('');
-    setSuccess('');
 
     try {
       const result = await resumeAPI.uploadResume(file);
@@ -87,15 +73,23 @@ const MyResumes = () => {
         };
         fetchResumes();
         
-        setSuccess('Resume uploaded successfully!');
+        toast.success('Resume uploaded successfully!');
         setFile(null);
         document.getElementById('resume-upload').value = '';
       } else {
-        setError(result.error || 'Failed to upload resume');
+        // Handle specific resume limit error
+        if (result.error?.includes('Maximum of 3 resumes allowed')) {
+          toast.error('You can only upload a maximum of 3 resumes. Please delete an existing resume to upload a new one.', {
+            autoClose: 5000, // Show for 5 seconds
+            position: 'top-right'
+          });
+        } else {
+          toast.error(result.error || 'Failed to upload resume');
+        }
       }
     } catch (err) {
       console.error('Upload failed:', err);
-      setError('Failed to upload resume. Please try again.');
+      toast.error(err.message || 'Failed to upload resume');
     } finally {
       setIsUploading(false);
     }
@@ -110,13 +104,13 @@ const MyResumes = () => {
       const result = await resumeAPI.deleteResume(id);
       if (result.success) {
         setResumes(resumes.filter(resume => resume.id !== id));
-        setSuccess('Resume deleted successfully!');
+        toast.success('Resume deleted successfully!');
       } else {
-        setError(result.error || 'Failed to delete resume');
+        toast.error(result.error || 'Failed to delete resume');
       }
     } catch (err) {
       console.error('Failed to delete resume:', err);
-      setError('Failed to delete resume. Please try again.');
+      toast.error('Failed to delete resume. Please try again.');
     }
   };
 
@@ -125,13 +119,13 @@ const MyResumes = () => {
       const result = await resumeAPI.downloadResume(resume.id, resume.originalName);
       if (result.success) {
         // The blob is already handled in the service
-        console.log('Download initiated');
+        toast.success('Download started!');
       } else {
-        setError(result.error || 'Failed to download resume');
+        toast.error(result.error || 'Failed to download resume');
       }
     } catch (err) {
       console.error('Failed to download resume:', err);
-      setError('Failed to download resume. Please try again.');
+      toast.error('Failed to download resume. Please try again.');
     }
   };
 
@@ -144,13 +138,13 @@ const MyResumes = () => {
           ...resume,
           isActive: resume.id === id
         })));
-        setSuccess('Resume set as active!');
+        toast.success('Resume set as active!');
       } else {
-        setError(result.error || 'Failed to set active resume');
+        toast.error(result.error || 'Failed to set active resume');
       }
     } catch (err) {
       console.error('Failed to set active resume:', err);
-      setError('Failed to set active resume. Please try again.');
+      toast.error('Failed to set active resume. Please try again.');
     }
   };
 
@@ -241,21 +235,7 @@ const MyResumes = () => {
               </button>
             </div>
 
-            {error && (
-              <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="fixed top-4 right-4 z-50 animate-pulse">
-                <div className="p-4 text-sm font-semibold text-green-800 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-lg flex items-center">
-                  <FiCheckCircle className="mr-2 h-5 w-5 text-green-600" />
-                  {success}
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
         </div>
 
         {/* Resumes Grid */}
