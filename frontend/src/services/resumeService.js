@@ -48,14 +48,13 @@ export const resumeAPI = {
       const response = await api.get(API_PREFIX);
       return {
         success: true,
-        data: response.data?.data || [],
+        data: response.data?.data || {},
       };
     } catch (error) {
       console.error('Failed to fetch resumes:', error);
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to fetch resumes',
-        data: [],
       };
     }
   },
@@ -115,14 +114,12 @@ export const resumeAPI = {
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      
-      // Clean up the URL object
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
       return { success: true };
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Failed to download resume:', error);
       return {
         success: false,
         error: error.response?.data?.message || 'Failed to download resume',

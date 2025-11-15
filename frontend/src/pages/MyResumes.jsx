@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle, FiHardDrive, FiCalendar } from 'react-icons/fi';
+import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle, FiHardDrive, FiCalendar, FiStar } from 'react-icons/fi';
 import { resumeAPI } from '../services/resumeService';
 import { TrashIcon } from 'lucide-react';
 
@@ -11,6 +11,16 @@ const MyResumes = () => {
   const [resumes, setResumes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Auto-hide success message after 3 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
   // Fetch resumes on component mount
   useEffect(() => {
     const fetchResumes = async () => {
@@ -18,6 +28,7 @@ const MyResumes = () => {
         setIsLoading(true);
         const response = await resumeAPI.getResumes();
         if (response.success) {
+          console.log('Fetched resumes:', response.data?.resumes);
           setResumes(response.data?.resumes || []);
         }
       } catch (err) {
@@ -98,7 +109,7 @@ const MyResumes = () => {
     try {
       const result = await resumeAPI.deleteResume(id);
       if (result.success) {
-        setResumes(resumes.filter(resume => resume._id !== id));
+        setResumes(resumes.filter(resume => resume.id !== id));
         setSuccess('Resume deleted successfully!');
       } else {
         setError(result.error || 'Failed to delete resume');
@@ -111,18 +122,10 @@ const MyResumes = () => {
 
   const handleDownload = async (resume) => {
     try {
-      const result = await resumeAPI.downloadResume(resume._id);
+      const result = await resumeAPI.downloadResume(resume.id, resume.originalName);
       if (result.success) {
-        // Create a blob from the response data
-        const blob = new Blob([result.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = resume.originalName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        // The blob is already handled in the service
+        console.log('Download initiated');
       } else {
         setError(result.error || 'Failed to download resume');
       }
@@ -133,12 +136,13 @@ const MyResumes = () => {
   };
 
   const handleSetActive = async (id) => {
+    console.log('Setting active resume with ID:', id);
     try {
       const result = await resumeAPI.setActiveResume(id);
       if (result.success) {
         setResumes(resumes.map(resume => ({
           ...resume,
-          isActive: resume._id === id
+          isActive: resume.id === id
         })));
         setSuccess('Resume set as active!');
       } else {
@@ -244,8 +248,11 @@ const MyResumes = () => {
             )}
 
             {success && (
-              <div className="p-3 text-sm text-green-700 bg-green-100 rounded-md">
-                {success}
+              <div className="fixed top-4 right-4 z-50 animate-pulse">
+                <div className="p-4 text-sm font-semibold text-green-800 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg shadow-lg flex items-center">
+                  <FiCheckCircle className="mr-2 h-5 w-5 text-green-600" />
+                  {success}
+                </div>
               </div>
             )}
           </div>
@@ -260,7 +267,7 @@ const MyResumes = () => {
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.isArray(resumes) && resumes.map((resume) => (
-                <div key={resume._id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div key={resume.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   <div className="p-6">
                     <div className="flex flex-col">
                       {/* File Icon and Name Section */}
@@ -288,9 +295,9 @@ const MyResumes = () => {
                       {/* Active Status Badge */}
                       {resume.isActive && (
                         <div className="mb-4">
-                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-50 to-green-100 text-emerald-700 border border-emerald-200">
-                            <FiCheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                            Active Resume
+                          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg border-2 border-green-400">
+                            <FiCheckCircle className="mr-2 h-4 w-4" />
+                            Currently Active
                           </span>
                         </div>
                       )}
@@ -309,17 +316,17 @@ const MyResumes = () => {
                             </button>
                             {!resume.isActive && (
                               <button
-                                onClick={() => handleSetActive(resume._id)}
-                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
+                                onClick={() => handleSetActive(resume.id)}
+                                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
                                 title="Set as active"
                               >
-                                <FiCheckCircle className="h-4 w-4 mr-2" />
-                                Set Active
+                                <FiStar className="h-4 w-4 mr-2" />
+                                Make Active
                               </button>
                             )}
                           </div>
                           <button
-                            onClick={() => handleDelete(resume._id)}
+                            onClick={() => handleDelete(resume.id)}
                             className="inline-flex items-center p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                             title="Delete"
                           >

@@ -71,6 +71,16 @@ class ResumeService {
     return { success: true };
   }
 
+  static async downloadResume(userId, resumeId) {
+    const resume = await Resume.findOne({ _id: resumeId, user: userId });
+    
+    if (!resume) {
+      throw new AppError('Resume not found', 404);
+    }
+
+    return resume;
+  }
+
   static formatResume(resume) {
     return {
       id: resume._id,

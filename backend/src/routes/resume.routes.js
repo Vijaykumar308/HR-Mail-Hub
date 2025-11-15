@@ -6,7 +6,8 @@ const {
   uploadResume: uploadResumeHandler,
   getUserResumes,
   setActiveResume,
-  deleteResume
+  deleteResume,
+  downloadResume
 } = require('../controllers/resume.controller');
 
 // Protect all routes with JWT authentication
@@ -22,8 +23,11 @@ router.get('/', (req, res, next) => {
 // POST /api/v1/resumes - Upload a new resume
 router.post('/', uploadMiddleware, uploadResumeHandler);
 
-// PATCH /api/v1/resumes/:id/active - Set a resume as active
-router.patch('/:id/active', setActiveResume);
+// PATCH /api/v1/resumes/:id/set-active - Set a resume as active
+router.patch('/:id/set-active', setActiveResume);
+
+// GET /api/v1/resumes/:id/download - Download a resume
+router.get('/:id/download', downloadResume);
 
 // DELETE /api/v1/resumes/:id - Delete a resume
 router.delete('/:id', deleteResume);
