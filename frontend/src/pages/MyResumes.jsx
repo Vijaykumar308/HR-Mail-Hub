@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle } from 'react-icons/fi';
+import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle, FiHardDrive, FiCalendar } from 'react-icons/fi';
 import { resumeAPI } from '../services/resumeService';
 import { TrashIcon } from 'lucide-react';
 
@@ -260,55 +260,72 @@ const MyResumes = () => {
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.isArray(resumes) && resumes.map((resume) => (
-                <div key={resume._id} className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                <div key={resume._id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   <div className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FiFile className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900 truncate">
-                              {resume.originalName}
-                            </h3>
-                            <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                              <span>{(resume.fileSize / 1024).toFixed(1)} KB</span>
-                              <span>•</span>
-                              <span>{new Date(resume.uploadedAt).toLocaleDateString()}</span>
+                    <div className="flex flex-col">
+                      {/* File Icon and Name Section */}
+                      <div className="flex items-start space-x-4 mb-4">
+                        <div className="flex-shrink-0 h-13 w-13 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl flex items-center justify-center border border-blue-200">
+                          <FiFile className="h-7 w-7 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-900 break-words leading-tight" title={resume.originalName}>
+                            {resume.originalName}
+                          </h3>
+                          <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <FiHardDrive className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="font-medium">{(resume.fileSize / 1024).toFixed(1)} KB</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FiCalendar className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="font-medium">{new Date(resume.uploadedAt).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
-                        {resume.isActive && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-3">
-                            Active
-                          </span>
-                        )}
                       </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <button
-                          onClick={() => handleDownload(resume)}
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Download"
-                        >
-                          <FiDownload className="h-5 w-5" />
-                        </button>
-                        {!resume.isActive && (
+
+                      {/* Active Status Badge */}
+                      {resume.isActive && (
+                        <div className="mb-4">
+                          <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-emerald-50 to-green-100 text-emerald-700 border border-emerald-200">
+                            <FiCheckCircle className="mr-1.5 h-3.5 w-3.5" />
+                            Active Resume
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleDownload(resume)}
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 border border-blue-200 hover:border-blue-300"
+                              title="Download"
+                            >
+                              <FiDownload className="h-4 w-4 mr-2" />
+                              Download
+                            </button>
+                            {!resume.isActive && (
+                              <button
+                                onClick={() => handleSetActive(resume._id)}
+                                className="inline-flex items-center px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
+                                title="Set as active"
+                              >
+                                <FiCheckCircle className="h-4 w-4 mr-2" />
+                                Set Active
+                              </button>
+                            )}
+                          </div>
                           <button
-                            onClick={() => handleSetActive(resume._id)}
-                            className="text-green-600 hover:text-green-800"
-                            title="Set as active"
+                            onClick={() => handleDelete(resume._id)}
+                            className="inline-flex items-center p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            title="Delete"
                           >
-                            <FiCheckCircle className="h-5 w-5" />
+                            <FiTrash2 className="h-4 w-4" />
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDelete(resume._id)}
-                          className="text-red-600 hover:text-red-800"
-                          title="Delete"
-                        >
-                          <FiTrash2 className="h-5 w-5" />
-                        </button>
+                        </div>
                       </div>
                     </div>
                   </div>
