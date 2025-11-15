@@ -122,6 +122,7 @@ app.use(compression());
 // 3) ROUTES
 // API v1 routes
 const v1Router = express.Router();
+v1Router.use('/auth', require('./routes/index'));
 v1Router.use('/users', require('./routes/user.routes'));
 v1Router.use('/resumes', require('./routes/resume.routes'));
 app.use('/api/v1', v1Router);

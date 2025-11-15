@@ -1,61 +1,70 @@
 import { useState } from 'react';
 import { resumeAPI } from '../services/resumeService';
+import { toast } from 'react-toastify';
 
-export const ResumeUpload = ({ onUploadSuccess }) => {
+const ResumeUpload = ({ onUploadSuccess }) => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    
-    // Validate file type (PDF, DOC, DOCX)
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (selectedFile && !allowedTypes.includes(selectedFile.type)) {
-      setError('Please upload a valid file (PDF, DOC, or DOCX)');
+  const handleFileChange = (event) => {
+    const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
+
+    // Basic file validation
+    const allowedTypes = ['application/pdf', 'application/msword', 
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(selectedFile.type)) {
+      toast.error('Please upload a PDF or Word document');
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (selectedFile && selectedFile.size > maxSize) {
-      setError('File size should be less than 5MB');
+    if (selectedFile.size > maxSize) {
+      toast.error('File size should be less than 5MB');
       return;
     }
 
     setFile(selectedFile);
-    setError('');
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a file to upload');
+      toast.error('Please select a file first');
       return;
     }
 
     setIsUploading(true);
-    setError('');
-    setSuccess('');
+    setUploadProgress(0);
 
     try {
-      const result = await resumeAPI.uploadResume(file);
-      
+      const result = await resumeAPI.uploadResume(
+        file,
+        (progress) => {
+          setUploadProgress(progress);
+        }
+      );
+
       if (result.success) {
-        setSuccess('Resume uploaded successfully!');
+        toast.success('Resume uploaded successfully!');
+        // Clear the file input
         setFile(null);
-        document.getElementById('resume-upload').value = '';
+        document.getElementById('file-upload').value = '';
+        
+        // Call the success callback if provided
         if (onUploadSuccess) {
           onUploadSuccess();
         }
       } else {
-        setError(result.error || 'Failed to upload resume');
+        toast.error(result.error || 'Failed to upload resume');
       }
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError('An error occurred during upload');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('An error occurred during upload');
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -65,7 +74,7 @@ export const ResumeUpload = ({ onUploadSuccess }) => {
         <label className="block">
           <span className="sr-only">Choose resume file</span>
           <input
-            id="resume-upload"
+            id="file-upload"
             type="file"
             accept=".pdf,.doc,.docx"
             onChange={handleFileChange}
@@ -91,21 +100,18 @@ export const ResumeUpload = ({ onUploadSuccess }) => {
         </button>
       </div>
 
-      {file && (
+      {isUploading && (
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div 
+            className="bg-primary-600 h-2.5 rounded-full" 
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+        </div>
+      )}
+
+      {file && !isUploading && (
         <div className="text-sm text-gray-600">
-          Selected file: {file.name} ({(file.size / 1024).toFixed(2)} KB)
-        </div>
-      )}
-
-      {error && (
-        <div className="text-sm text-red-600">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="text-sm text-green-600">
-          {success}
+          Selected file: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
         </div>
       )}
     </div>
