@@ -57,11 +57,19 @@ const ResumeUpload = ({ onUploadSuccess }) => {
           onUploadSuccess();
         }
       } else {
-        toast.error(result.error || 'Failed to upload resume');
+        // Handle specific resume limit error
+        if (result.error?.includes('Maximum of 3 resumes allowed')) {
+          toast.error('You can only upload a maximum of 3 resumes. Please delete an existing resume to upload a new one.', {
+            autoClose: 5000, // Show for 5 seconds
+            position: 'top-right'
+          });
+        } else {
+          toast.error(result.error || 'Failed to upload resume');
+        }
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('An error occurred during upload');
+      toast.error(error.message || 'An error occurred during upload');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);

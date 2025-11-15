@@ -5,8 +5,8 @@ const path = require('path');
 
 class ResumeService {
   static async uploadResume(user, file) {
-    // Check resume limit (optional - comment out to remove limit)
-    // await Resume.checkResumeLimit(user._id);
+    // Check resume limit
+    await Resume.checkResumeLimit(user._id);
 
     const resume = await Resume.create({
       user: user._id,
@@ -69,6 +69,16 @@ class ResumeService {
 
     // The file will be deleted by the post-remove hook in the model
     return { success: true };
+  }
+
+  static async downloadResume(userId, resumeId) {
+    const resume = await Resume.findOne({ _id: resumeId, user: userId });
+    
+    if (!resume) {
+      throw new AppError('Resume not found', 404);
+    }
+
+    return resume;
   }
 
   static formatResume(resume) {

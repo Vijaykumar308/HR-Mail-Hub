@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle } from 'react-icons/fi';
+import { FiFile, FiTrash2, FiUploadCloud, FiDownload, FiCheckCircle, FiHardDrive, FiCalendar, FiStar } from 'react-icons/fi';
 import { resumeAPI } from '../services/resumeService';
 import { TrashIcon } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const MyResumes = () => {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [resumes, setResumes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,35 +15,15 @@ const MyResumes = () => {
     const fetchResumes = async () => {
       try {
         setIsLoading(true);
-        // Replace with actual API call
-        // const response = await resumeAPI.getResumes();
-        // setResumes(response.data || []);
-        
-        // Mock data for demonstration
-        setTimeout(() => {
-          setResumes([
-            {
-              id: 1,
-              name: 'Software_Engineer_Resume.pdf',
-              uploaded: '2023-10-15',
-              isActive: true,
-              size: '245 KB',
-              url: '/path/to/resume1.pdf'
-            },
-            {
-              id: 2,
-              name: 'Frontend_Developer_Resume.pdf',
-              uploaded: '2023-09-28',
-              isActive: false,
-              size: '198 KB',
-              url: '/path/to/resume2.pdf'
-            }
-          ]);
-          setIsLoading(false);
-        }, 500);
+        const response = await resumeAPI.getResumes();
+        if (response.success) {
+          console.log('Fetched resumes:', response.data?.resumes);
+          setResumes(response.data?.resumes || []);
+        }
       } catch (err) {
         console.error('Failed to fetch resumes:', err);
-        setError('Failed to load resumes. Please try again.');
+        toast.error('Failed to load resumes. Please try again.');
+      } finally {
         setIsLoading(false);
       }
     };
@@ -59,36 +38,29 @@ const MyResumes = () => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!allowedTypes.includes(selectedFile.type)) {
-      setError('Please upload a PDF, DOC, or DOCX file');
+      toast.error('Please upload a PDF, DOC, or DOCX file');
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (selectedFile.size > maxSize) {
-      setError('File size should be less than 5MB');
+      toast.error('File size should be less than 5MB');
       return;
     }
 
     setFile(selectedFile);
-    setError('');
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a file to upload');
+      toast.error('Please select a file to upload');
       return;
     }
 
     setIsUploading(true);
-    setError('');
-    setSuccess('');
 
     try {
-      console.log('Uploading file:', file);
-      console.log('File type:', file.type);
-      console.log('File size:', file.size);
-      
       const result = await resumeAPI.uploadResume(file);
       
       if (result.success) {
@@ -96,20 +68,28 @@ const MyResumes = () => {
         const fetchResumes = async () => {
           const result = await resumeAPI.getResumes();
           if (result.success) {
-            setResumes(result.data || []);
+            setResumes(result.data?.resumes || []);
           }
         };
         fetchResumes();
         
-        setSuccess('Resume uploaded successfully!');
+        toast.success('Resume uploaded successfully!');
         setFile(null);
         document.getElementById('resume-upload').value = '';
       } else {
-        setError(result.error || 'Failed to upload resume');
+        // Handle specific resume limit error
+        if (result.error?.includes('Maximum of 3 resumes allowed')) {
+          toast.error('You can only upload a maximum of 3 resumes. Please delete an existing resume to upload a new one.', {
+            autoClose: 5000, // Show for 5 seconds
+            position: 'top-right'
+          });
+        } else {
+          toast.error(result.error || 'Failed to upload resume');
+        }
       }
     } catch (err) {
       console.error('Upload failed:', err);
-      setError('Failed to upload resume. Please try again.');
+      toast.error(err.message || 'Failed to upload resume');
     } finally {
       setIsUploading(false);
     }
@@ -121,33 +101,51 @@ const MyResumes = () => {
     }
 
     try {
-      // Replace with actual API call
-      // await resumeAPI.deleteResume(id);
-      setResumes(resumes.filter(resume => resume.id !== id));
-      setSuccess('Resume deleted successfully!');
+      const result = await resumeAPI.deleteResume(id);
+      if (result.success) {
+        setResumes(resumes.filter(resume => resume.id !== id));
+        toast.success('Resume deleted successfully!');
+      } else {
+        toast.error(result.error || 'Failed to delete resume');
+      }
     } catch (err) {
-      console.error('Delete failed:', err);
-      setError('Failed to delete resume. Please try again.');
+      console.error('Failed to delete resume:', err);
+      toast.error('Failed to delete resume. Please try again.');
     }
   };
 
-  const handleDownload = (url, name) => {
-    // For demo purposes - in a real app, this would trigger a download
-    console.log(`Downloading ${name} from ${url}`);
-    // Actual implementation would be similar to:
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (resume) => {
+    try {
+      const result = await resumeAPI.downloadResume(resume.id, resume.originalName);
+      if (result.success) {
+        // The blob is already handled in the service
+        toast.success('Download started!');
+      } else {
+        toast.error(result.error || 'Failed to download resume');
+      }
+    } catch (err) {
+      console.error('Failed to download resume:', err);
+      toast.error('Failed to download resume. Please try again.');
+    }
   };
 
-  const handleSetActive = (id) => {
-    setResumes(resumes.map(resume => ({
-      ...resume,
-      isActive: resume.id === id
-    })));
+  const handleSetActive = async (id) => {
+    console.log('Setting active resume with ID:', id);
+    try {
+      const result = await resumeAPI.setActiveResume(id);
+      if (result.success) {
+        setResumes(resumes.map(resume => ({
+          ...resume,
+          isActive: resume.id === id
+        })));
+        toast.success('Resume set as active!');
+      } else {
+        toast.error(result.error || 'Failed to set active resume');
+      }
+    } catch (err) {
+      console.error('Failed to set active resume:', err);
+      toast.error('Failed to set active resume. Please try again.');
+    }
   };
 
   return (
@@ -237,18 +235,7 @@ const MyResumes = () => {
               </button>
             </div>
 
-            {error && (
-              <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="p-3 text-sm text-green-700 bg-green-100 rounded-md">
-                {success}
-              </div>
-            )}
-          </div>
+            </div>
         </div>
 
         {/* Resumes Grid */}
@@ -257,81 +244,85 @@ const MyResumes = () => {
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
             </div>
-          ) : resumes.length > 0 ? (
+          ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {resumes.map((resume) => (
-                <div key={resume.id} className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200">
+              {Array.isArray(resumes) && resumes.map((resume) => (
+                <div key={resume.id} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
                   <div className="p-6">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FiFile className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium text-gray-900 truncate">{resume.name}</h3>
-                        <div className="flex items-center mt-1 text-sm text-gray-500">
-                          <span>{resume.size}</span>
-                          <span className="mx-2">•</span>
-                          <span>Uploaded {resume.uploaded}</span>
+                    <div className="flex flex-col">
+                      {/* File Icon and Name Section */}
+                      <div className="flex items-start space-x-4 mb-4">
+                        <div className="flex-shrink-0 h-13 w-13 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl flex items-center justify-center border border-blue-200">
+                          <FiFile className="h-7 w-7 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-900 break-words leading-tight" title={resume.originalName}>
+                            {resume.originalName}
+                          </h3>
+                          <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <FiHardDrive className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="font-medium">{(resume.fileSize / 1024).toFixed(1)} KB</span>
+                            </div>
+                            <div className="flex items-center">
+                              <FiCalendar className="h-4 w-4 mr-2 text-gray-400" />
+                              <span className="font-medium">{new Date(resume.uploadedAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="mt-6 flex items-center justify-between">
-                      {resume.isActive ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          <FiCheckCircle className="mr-1.5 h-3.5 w-3.5 text-green-500" />
-                          Active Resume
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleSetActive(resume.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          Set as Active
-                        </button>
+
+                      {/* Active Status Badge */}
+                      {resume.isActive && (
+                        <div className="mb-4">
+                          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg border-2 border-green-400">
+                            <FiCheckCircle className="mr-2 h-4 w-4" />
+                            Currently Active
+                          </span>
+                        </div>
                       )}
-                      
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleDownload(resume.url, resume.name)}
-                          className="p-1.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-blue-50"
-                          title="Download resume"
-                        >
-                          <FiDownload className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(resume.id)}
-                          className="p-1.5 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50"
-                          title="Delete resume"
-                        >
-                          <FiTrash2 className="h-5 w-5" />
-                        </button>
+
+                      {/* Action Buttons */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleDownload(resume)}
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 border border-blue-200 hover:border-blue-300"
+                              title="Download"
+                            >
+                              <FiDownload className="h-4 w-4 mr-2" />
+                              Download
+                            </button>
+                            {!resume.isActive && (
+                              <button
+                                onClick={() => handleSetActive(resume.id)}
+                                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                                title="Set as active"
+                              >
+                                <FiStar className="h-4 w-4 mr-2" />
+                                Make Active
+                              </button>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleDelete(resume.id)}
+                            className="inline-flex items-center p-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                            title="Delete"
+                          >
+                            <FiTrash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-white rounded-lg shadow">
-              <FiFile className="mx-auto h-16 w-16 text-gray-300" />
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No resumes</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Get started by uploading your first resume.
-              </p>
-              <div className="mt-6">
-                <label className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
-                  <FiUploadCloud className="-ml-1 mr-2 h-4 w-4" />
-                  Upload Resume
-                  <input 
-                    id="resume-upload" 
-                    type="file" 
-                    className="hidden" 
-                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={handleFileChange}
-                  />
-                </label>
-              </div>
+              {(!Array.isArray(resumes) || resumes.length === 0) && (
+                <div className="col-span-full text-center py-8 text-gray-500">
+                  Your uploaded resumes will appear here
+                </div>
+              )}
             </div>
           )}
         </div>
