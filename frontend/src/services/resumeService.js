@@ -13,10 +13,16 @@ export const resumeAPI = {
     const formData = new FormData();
     formData.append('resume', file);
     
+    console.log('FormData entries:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+    
     try {
       const response = await api.post(API_PREFIX, formData, {
+        // Remove Content-Type header to let browser set it correctly for FormData
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'multipart/form-data'
         },
         onUploadProgress: onUploadProgress ? (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);

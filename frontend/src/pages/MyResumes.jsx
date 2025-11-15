@@ -85,23 +85,28 @@ const MyResumes = () => {
     setSuccess('');
 
     try {
-      // Replace with actual API call
-      // const result = await resumeAPI.uploadResume(file);
+      console.log('Uploading file:', file);
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
       
-      // Mock API response
-      const newResume = {
-        id: Date.now(),
-        name: file.name,
-        uploaded: new Date().toISOString().split('T')[0],
-        isActive: false,
-        size: `${(file.size / 1024).toFixed(0)} KB`,
-        url: URL.createObjectURL(file)
-      };
-
-      setResumes([newResume, ...resumes]);
-      setSuccess('Resume uploaded successfully!');
-      setFile(null);
-      document.getElementById('resume-upload').value = '';
+      const result = await resumeAPI.uploadResume(file);
+      
+      if (result.success) {
+        // Refresh the resumes list
+        const fetchResumes = async () => {
+          const result = await resumeAPI.getResumes();
+          if (result.success) {
+            setResumes(result.data || []);
+          }
+        };
+        fetchResumes();
+        
+        setSuccess('Resume uploaded successfully!');
+        setFile(null);
+        document.getElementById('resume-upload').value = '';
+      } else {
+        setError(result.error || 'Failed to upload resume');
+      }
     } catch (err) {
       console.error('Upload failed:', err);
       setError('Failed to upload resume. Please try again.');
