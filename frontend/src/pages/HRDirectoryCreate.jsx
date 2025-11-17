@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Briefcase, MapPin, Phone, } from 'lucide-react';
 import { LiaLinkedinIn } from 'react-icons/lia';
+import { toast } from 'react-toastify';
+import hrDirectoryService from '../services/hrDirectoryService';
 
 const HRDirectoryCreate = () => {
   const navigate = useNavigate();
@@ -12,7 +14,8 @@ const HRDirectoryCreate = () => {
     industry: '',
     location: '',
     phone: '',
-    linkedin: ''
+    linkedin: '',
+    status: 'active'
   });
 
   const [errors, setErrors] = useState({});
@@ -59,20 +62,33 @@ const HRDirectoryCreate = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
       setIsSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Form submitted:', formData);
-        // In a real app, you would make an API call here
-        // await api.createHRContact(formData);
-        setIsSubmitting(false);
+      try {
+        await hrDirectoryService.createHRContact(formData);
+        toast.success('HR contact created successfully!');
         navigate('/hr-directory');
-      }, 1000);
+      } catch (error) {
+        console.error('Error creating HR contact:', error);
+        
+        // Show detailed error message in toast
+        let errorMessage = 'Failed to create HR contact. Please try again.';
+        
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response?.data?.error?.message) {
+          errorMessage = error.response.data.error.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        toast.error(errorMessage);
+        setIsSubmitting(false);
+      }
     }
   };
 

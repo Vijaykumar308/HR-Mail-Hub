@@ -1,250 +1,87 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Pagination from '../components/Pagination';
+import EmailModal from '../components/EmailModal';
+import emailService from '../services/emailService';
+import hrDirectoryService from '../services/hrDirectoryService';
 
 const HRDirectory = () => {
   const navigate = useNavigate();
   const [selectedHRs, setSelectedHRs] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [selectedRecipients, setSelectedRecipients] = useState([]);
+  const [isEmailSending, setIsEmailSending] = useState(false);
   
-  // Sample HR data with Indian companies and female HRs
-  const [hrContacts, setHrContacts] = useState([
-    {
-      id: 1,
-      company: 'TCS',
-      name: 'Priya Sharma',
-      email: 'priya.sharma@tcs.com',
-      industry: 'IT Services',
-      location: 'Mumbai, India',
-      lastContacted: '2023-11-10',
-      resumesShared: 3,
-      status: 'active'
-    },
-    {
-      id: 2,
-      company: 'Infosys',
-      name: 'Ananya Patel',
-      email: 'ananya.p@infosys.com',
-      industry: 'Technology',
-      location: 'Bengaluru, India',
-      lastContacted: '2023-11-08',
-      status: 'active'
-    },
-    {
-      id: 3,
-      company: 'Wipro',
-      name: 'Meera Reddy',
-      email: 'meera.reddy@wipro.com',
-      industry: 'IT Services',
-      location: 'Pune, India',
-      lastContacted: '2023-11-05',
-      status: 'pending'
-    },
-    {
-      id: 4,
-      company: 'HCL Technologies',
-      name: 'Kavita Verma',
-      email: 'kavita.v@hcl.com',
-      industry: 'Technology',
-      location: 'Noida, India',
-      lastContacted: '2023-11-12',
-      status: 'active'
-    },
-    {
-      id: 5,
-      company: 'Tech Mahindra',
-      name: 'Divya Iyer',
-      email: 'divya.iyer@techmahindra.com',
-      industry: 'IT Services',
-      location: 'Hyderabad, India',
-      lastContacted: '2023-11-01',
-      status: 'active'
-    },
-    {
-      id: 6,
-      company: 'Accenture India',
-      name: 'Neha Kapoor',
-      email: 'neha.kapoor@accenture.com',
-      industry: 'Consulting',
-      location: 'Gurugram, India',
-      lastContacted: '2023-10-28',
-      status: 'inactive'
-    },
-    {
-      id: 7,
-      company: 'HDFC Bank',
-      name: 'Shreya Menon',
-      email: 'shreya.m@hdfcbank.com',
-      industry: 'Banking',
-      location: 'Mumbai, India',
-      lastContacted: '2023-11-15',
-      status: 'active'
-    },
-    {
-      id: 8,
-      company: 'ICICI Bank',
-      name: 'Aishwarya Nair',
-      email: 'aishwarya.n@icicibank.com',
-      industry: 'Banking',
-      location: 'Mumbai, India',
-      lastContacted: '2023-11-14',
-      status: 'active'
-    },
-    {
-      id: 9,
-      company: 'Flipkart',
-      name: 'Aditi Joshi',
-      email: 'aditi.joshi@flipkart.com',
-      industry: 'E-commerce',
-      location: 'Bengaluru, India',
-      lastContacted: '2023-11-09',
-      status: 'active'
-    },
-    {
-      id: 10,
-      company: 'Zomato',
-      name: 'Pooja Gupta',
-      email: 'pooja.g@zomato.com',
-      industry: 'Food Tech',
-      location: 'Gurugram, India',
-      lastContacted: '2023-10-25',
-      status: 'pending'
-    },
-    {
-      id: 11,
-      company: 'Byju\'s',
-      name: 'Riya Malhotra',
-      email: 'riya.m@byjus.com',
-      industry: 'EdTech',
-      location: 'Bengaluru, India',
-      lastContacted: '2023-11-02',
-      status: 'active'
-    },
-    {
-      id: 12,
-      company: 'Airtel',
-      name: 'Anjali Deshpande',
-      email: 'anjali.d@airtel.in',
-      industry: 'Telecom',
-      location: 'New Delhi, India',
-      lastContacted: '2023-10-30',
-      status: 'active'
-    },
-    {
-      id: 13,
-      company: 'Reliance Jio',
-      name: 'Kiran Nair',
-      email: 'kiran.n@jio.com',
-      industry: 'Telecom',
-      location: 'Mumbai, India',
-      lastContacted: '2023-11-13',
-      status: 'active'
-    },
-    {
-      id: 14,
-      company: 'Mahindra & Mahindra',
-      name: 'Shweta Rao',
-      email: 'shweta.rao@mahindra.com',
-      industry: 'Automobile',
-      location: 'Mumbai, India',
-      lastContacted: '2023-10-22',
-      status: 'inactive'
-    },
-    {
-      id: 15,
-      company: 'Tata Motors',
-      name: 'Nandini Choudhary',
-      email: 'nandini.c@tatamotors.com',
-      industry: 'Automobile',
-      location: 'Pune, India',
-      lastContacted: '2023-11-07',
-      status: 'active'
-    },
-    {
-      id: 16,
-      company: 'Wipro GE Healthcare',
-      name: 'Ananya Reddy',
-      email: 'ananya.r@wiproge.com',
-      industry: 'Healthcare',
-      location: 'Bengaluru, India',
-      lastContacted: '2023-10-18',
-      status: 'active'
-    },
-    {
-      id: 17,
-      company: 'Apollo Hospitals',
-      name: 'Megha Srinivasan',
-      email: 'megha.s@apollohospitals.com',
-      industry: 'Healthcare',
-      location: 'Chennai, India',
-      lastContacted: '2023-11-03',
-      status: 'pending'
-    },
-    {
-      id: 18,
-      company: 'Asian Paints',
-      name: 'Shalini Kapoor',
-      email: 'shalini.k@asianpaints.com',
-      industry: 'Manufacturing',
-      location: 'Mumbai, India',
-      lastContacted: '2023-10-29',
-      status: 'active'
-    },
-    {
-      id: 19,
-      company: 'ITC Limited',
-      name: 'Rashmi Iyer',
-      email: 'rashmi.iyer@itc.in',
-      industry: 'FMCG',
-      location: 'Kolkata, India',
-      lastContacted: '2023-11-06',
-      status: 'active'
-    },
-    {
-      id: 20,
-      company: 'Larsen & Toubro',
-      name: 'Anita Desai',
-      email: 'anita.desai@larsentoubro.com',
-      industry: 'Construction',
-      location: 'Mumbai, India',
-      lastContacted: '2023-10-20',
-      status: 'active'
-    }
-  ]);
-
+  // Database state
+  const [hrContacts, setHrContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [pages, setPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     industry: '',
     location: '',
     status: ''
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // Number of items per page
+  const itemsPerPage = 10;
 
-  const industries = [...new Set(hrContacts.map(hr => hr.industry))];
-  const locations = [...new Set(hrContacts.map(hr => hr.location))];
+  // Load HR contacts from database
+  const loadHRContacts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await hrDirectoryService.getAllHRContacts({
+        ...filters,
+        page: currentPage,
+        limit: itemsPerPage
+      });
+      
+      console.log('API Response:', response);
+      console.log('hrContacts from response:', response.data.hrContacts);
+      
+      setHrContacts(response.data.hrContacts);
+      setTotal(response.data.total);
+      setPages(response.data.pages);
+    } catch (err) {
+      console.error('Error loading HR contacts:', err);
+      setError('Failed to load HR contacts. Please try again.');
+      setHrContacts([]);
+      setTotal(0);
+      setPages(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadHRContacts();
+  }, [currentPage, filters]);
+
+  const industries = hrContacts ? [...new Set(hrContacts.map(hr => hr.industry))] : [];
+  const locations = hrContacts ? [...new Set(hrContacts.map(hr => hr.location))] : [];
   const statuses = ['active', 'pending', 'inactive'];
 
-  // Filter HRs based on selected filters
-  const filteredHRs = useMemo(() => {
-    const filtered = hrContacts.filter(hr => {
-      return (
-        (filters.industry === '' || hr.industry === filters.industry) &&
-        (filters.location === '' || hr.location === filters.location) &&
-        (filters.status === '' || hr.status === filters.status)
-      );
-    });
-    
-    // Reset to first page when filters change
-    setCurrentPage(1);
-    return filtered;
-  }, [hrContacts, filters.industry, filters.location, filters.status]);
+  // CRUD handlers
+  const handleEditHR = (hr) => {
+    // Navigate to edit page (we'll need to create this route)
+    navigate(`/hr-directory/edit/${hr._id}`);
+  };
 
-  // Get current items for pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredHRs.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredHRs.length / itemsPerPage);
+  const handleDeleteHR = async (hr) => {
+    if (window.confirm(`Are you sure you want to delete ${hr.name} from ${hr.company}?`)) {
+      try {
+        await hrDirectoryService.deleteHRContact(hr._id);
+        loadHRContacts(); // Reload the data
+      } catch (error) {
+        console.error('Error deleting HR contact:', error);
+        toast.error('Failed to delete HR contact. Please try again.');
+      }
+    }
+  };
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -259,18 +96,18 @@ const HRDirectory = () => {
 
   // Update selectAll state based on current page's selection
   useEffect(() => {
-    if (currentItems.length > 0) {
-      const allCurrentPageSelected = currentItems.every(item => 
-        selectedHRs.includes(item.id)
+    if (hrContacts && hrContacts.length > 0) {
+      const allCurrentPageSelected = hrContacts && hrContacts.every(item => 
+        selectedHRs.includes(item._id)
       );
       setSelectAll(allCurrentPageSelected);
     } else {
       setSelectAll(false);
     }
-  }, [currentPage, selectedHRs, currentItems]);
+  }, [currentPage, selectedHRs, hrContacts]);
 
   const handleSelectAll = () => {
-    const currentPageIds = currentItems.map(item => item.id);
+    const currentPageIds = hrContacts ? hrContacts.map(item => item._id) : [];
     
     if (selectAll) {
       // Deselect all items on the current page
@@ -289,12 +126,81 @@ const HRDirectory = () => {
     }));
   };
 
+  // Email handler functions
+  const handleSendEmail = (hr) => {
+    setSelectedRecipients([{
+      id: hr._id,
+      name: hr.name,
+      email: hr.email,
+      company: hr.company
+    }]);
+    setIsEmailModalOpen(true);
+  };
+
+  const handleSendBulkEmail = () => {
+    const selectedHRContacts = hrContacts ? hrContacts.filter(hr => selectedHRs.includes(hr._id)) : [];
+    setSelectedRecipients(selectedHRContacts.map(hr => ({
+      id: hr._id,
+      name: hr.name,
+      email: hr.email,
+      company: hr.company
+    })));
+    setIsEmailModalOpen(true);
+  };
+
+  const handleEmailSubmit = async (emailData) => {
+    setIsEmailSending(true);
+    try {
+      if (selectedRecipients.length === 1) {
+        await emailService.sendEmail(emailData);
+      } else {
+        await emailService.sendBulkEmail(emailData);
+      }
+      
+      // Show success message
+      toast.success(`Email sent successfully to ${selectedRecipients.length} recipient(s)!`);
+      setIsEmailModalOpen(false);
+      setSelectedRecipients([]);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error(`Failed to send email: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
+  const handleCloseEmailModal = () => {
+    setIsEmailModalOpen(false);
+    setSelectedRecipients([]);
+  };
+
 
   return (
-    <div className="space-y-6 max-w-full overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
+    <>
+      <div className="space-y-6 max-w-full overflow-x-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
         <div className="mt-4 sm:mt-0 flex space-x-3">
+          {selectedHRs.length > 0 && (
+            <button
+              type="button"
+              onClick={handleSendBulkEmail}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <svg
+                className="-ml-1 mr-2 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              Send Email ({selectedHRs.length})
+            </button>
+          )}
+          
           <button
             type="button"
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -335,6 +241,7 @@ const HRDirectory = () => {
             Add HR Contact
           </button>
         </div>
+      </div>
       </div>
 
       {/* Filters */}
@@ -411,7 +318,36 @@ const HRDirectory = () => {
 
       {/* HR Contacts Table */}
       <div className="flex flex-col w-full overflow-x-auto">
-        <div className="inline-block min-w-full py-2 align-middle">
+        {/* Error State */}
+        {error && (
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  {error}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+            <span className="ml-2 text-gray-600">Loading HR contacts...</span>
+          </div>
+        )}
+
+        {/* Table */}
+        {!loading && (
+          <div className="inline-block min-w-full py-2 align-middle">
           <div className="overflow-hidden shadow border-b border-gray-200 sm:rounded-lg">
               <div className="bg-white px-4 py-3 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
@@ -463,16 +399,19 @@ const HRDirectory = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Resumes Shared
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentItems.map((hr) => (
-                    <tr key={hr.id} className={selectedHRs.includes(hr.id) ? 'bg-gray-50' : 'hover:bg-gray-50'}>
+                  {hrContacts && hrContacts.map((hr) => (
+                    <tr key={hr._id} className={selectedHRs.includes(hr._id) ? 'bg-gray-50' : 'hover:bg-gray-50'}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
-                          checked={selectedHRs.includes(hr.id)}
-                          onChange={() => handleSelectHR(hr.id)}
+                          checked={selectedHRs.includes(hr._id)}
+                          onChange={() => handleSelectHR(hr._id)}
                           className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                         />
                       </td>
@@ -508,23 +447,83 @@ const HRDirectory = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 font-medium">{hr.resumesShared || 0}</div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                        <button
+                          onClick={() => handleSendEmail(hr)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-2"
+                        >
+                          <svg
+                            className="-ml-0.5 mr-1.5 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                          </svg>
+                          Send Email
+                        </button>
+                        <button
+                          onClick={() => handleEditHR(hr)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 mr-2"
+                        >
+                          <svg
+                            className="-ml-0.5 mr-1.5 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteHR(hr)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                          <svg
+                            className="-ml-0.5 mr-1.5 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
               
               {/* Pagination */}
               <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <Pagination 
                   currentPage={currentPage}
-                  totalPages={totalPages}
+                  totalPages={pages}
+                  totalItems={total}
                   onPageChange={paginate}
                 />
               </div>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+
+      {/* Email Modal */}
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={handleCloseEmailModal}
+        recipients={selectedRecipients}
+        onSendEmail={handleEmailSubmit}
+        isLoading={isEmailSending}
+      />
+
+    </>
   );
 };
 

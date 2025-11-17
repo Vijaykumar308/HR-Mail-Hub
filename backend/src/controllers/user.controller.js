@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const emailService = require('../services/email.service');
 
 // Get all users
 exports.getAllUsers = catchAsync(async (req, res, next) => {
@@ -86,5 +87,136 @@ exports.deleteUser = catchAsync(async (req, res, next) => {
   res.status(204).json({
     status: 'success',
     data: null,
+  });
+});
+
+// Test email functionality
+exports.testEmail = catchAsync(async (req, res, next) => {
+  await emailService.sendEmail({
+    to: 'jwvijaykumar@gmail.com',
+    subject: 'HR Mail Hub - Email Service Test',
+    text: 'This is a test email from HR Mail Hub email service.',
+    html: `
+      <h1>Email Service Test</h1>
+      <p>This is a test email from HR Mail Hub email service.</p>
+      <p>If you receive this, the email service is working correctly!</p>
+      <p>Timestamp: ${new Date().toISOString()}</p>
+    `
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Test email sent successfully to jwvijaykumar@gmail.com'
+  });
+});
+
+// Test welcome email
+exports.testWelcomeEmail = catchAsync(async (req, res, next) => {
+  await emailService.sendWelcomeEmail({
+    email: 'jwvijaykumar@gmail.com',
+    name: 'Test User',
+    password: 'TestPass123'
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Welcome email test sent successfully'
+  });
+});
+
+// Test password reset email
+exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
+  await emailService.sendPasswordResetEmail({
+    email: 'jwvijaykumar@gmail.com',
+    name: 'Test User',
+    resetToken: 'test-token-123',
+    resetUrl: 'http://localhost:3000/reset-password?token=test-token-123'
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Password reset email test sent successfully'
+  });
+});
+
+// Send custom email
+exports.sendEmail = catchAsync(async (req, res, next) => {
+  const { recipients, subject, message } = req.body;
+  
+  // Send email to each recipient
+  const emailPromises = recipients.map(recipient => 
+    emailService.sendEmail({
+      to: recipient.email,
+      subject,
+      text: message,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">${subject}</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #666; line-height: 1.6;">${message}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+        </div>
+      `
+    })
+  );
+  
+  await Promise.all(emailPromises);
+  
+  res.status(200).json({
+    status: 'success',
+    message: `Email sent successfully to ${recipients.length} recipient(s)`
+  });
+});
+
+// Send bulk email to multiple recipients
+exports.sendBulkEmail = catchAsync(async (req, res, next) => {
+  const { recipients, subject, message } = req.body;
+  
+  // Send email to each recipient
+  const emailPromises = recipients.map(recipient => 
+    emailService.sendEmail({
+      to: recipient.email,
+      subject,
+      text: message,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">${subject}</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #666; line-height: 1.6;">${message}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+        </div>
+      `
+    })
+  );
+  
+  await Promise.all(emailPromises);
+  
+  res.status(200).json({
+    status: 'success',
+    message: `Bulk email sent successfully to ${recipients.length} recipient(s)`
+  });
+});
+
+// Test resume submission email
+exports.testResumeSubmissionEmail = catchAsync(async (req, res, next) => {
+  await emailService.sendResumeSubmissionEmail({
+    email: 'jwvijaykumar@gmail.com',
+    name: 'Test User',
+    resumeName: 'test_resume.pdf'
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Resume submission email test sent successfully'
   });
 });

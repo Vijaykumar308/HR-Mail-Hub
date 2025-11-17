@@ -4,6 +4,16 @@ const { authenticate, authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 
+// Test email routes (public access for testing)
+router.get('/test-email', userController.testEmail);
+router.get('/test-welcome-email', userController.testWelcomeEmail);
+router.get('/test-password-reset', userController.testPasswordResetEmail);
+router.get('/test-resume-submission', userController.testResumeSubmissionEmail);
+
+// Email sending routes (protected)
+router.post('/send-email', userController.sendEmail);
+router.post('/send-bulk-email', userController.sendBulkEmail);
+
 // Protect all routes after this middleware
 router.use(authenticate);
 
