@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Pagination = ({ currentPage, totalPages, onPageChange, className = '' }) => {
+const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, className = '' }) => {
   const maxVisiblePages = 5;
   const halfMaxVisiblePages = Math.floor(maxVisiblePages / 2);
   
@@ -37,9 +37,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className = '' }) =
 
   // Calculate the range of results being shown
   const itemsPerPage = 10; // This should match the itemsPerPage in the parent component
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalPages * itemsPerPage);
-  const totalItems = totalPages * itemsPerPage;
+  const startItem = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endItem = totalItems > 0 ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
 
   return (
     <div className={`${className} flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6`}>

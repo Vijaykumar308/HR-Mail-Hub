@@ -125,6 +125,7 @@ const v1Router = express.Router();
 v1Router.use('/auth', require('./routes/index'));
 v1Router.use('/users', require('./routes/user.routes'));
 v1Router.use('/resumes', require('./routes/resume.routes'));
+v1Router.use('/hr-directory', require('./routes/hrDirectory.routes'));
 app.use('/api/v1', v1Router);
 
 // 4) Serve static files from uploads directory
