@@ -1,8 +1,0 @@
-# Email Configuration
-EMAIL_SERVICE=gmail
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USERNAME=vijaykumar@gmail.com
-EMAIL_PASSWORD=234131dsf131
-EMAIL_FROM=HR Mail Hub <noreply@hrmailhub.com>

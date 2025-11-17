@@ -10,6 +10,10 @@ router.get('/test-welcome-email', userController.testWelcomeEmail);
 router.get('/test-password-reset', userController.testPasswordResetEmail);
 router.get('/test-resume-submission', userController.testResumeSubmissionEmail);
 
+// Email sending routes (protected)
+router.post('/send-email', userController.sendEmail);
+router.post('/send-bulk-email', userController.sendBulkEmail);
+
 // Protect all routes after this middleware
 router.use(authenticate);
 

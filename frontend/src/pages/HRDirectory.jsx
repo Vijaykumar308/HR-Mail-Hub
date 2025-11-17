@@ -1,14 +1,30 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../components/Pagination';
+import EmailModal from '../components/EmailModal';
+import emailService from '../services/emailService';
 
 const HRDirectory = () => {
   const navigate = useNavigate();
   const [selectedHRs, setSelectedHRs] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [selectedRecipients, setSelectedRecipients] = useState([]);
+  const [isEmailSending, setIsEmailSending] = useState(false);
   
   // Sample HR data with Indian companies and female HRs
   const [hrContacts, setHrContacts] = useState([
+    {
+      id: 101,
+      company: 'Vj',
+      name: 'Vijay Kumar ',
+      email: 'jwvijaykumar@gmail.com',
+      industry: 'IT Services',
+      location: 'Amritsar, Punjab, India',
+      lastContacted: '2023-11-10',
+      resumesShared: 3,
+      status: 'active'
+    },
     {
       id: 1,
       company: 'TCS',
@@ -289,12 +305,80 @@ const HRDirectory = () => {
     }));
   };
 
+  // Email handler functions
+  const handleSendEmail = (hr) => {
+    setSelectedRecipients([{
+      id: hr.id,
+      name: hr.name,
+      email: hr.email,
+      company: hr.company
+    }]);
+    setIsEmailModalOpen(true);
+  };
+
+  const handleSendBulkEmail = () => {
+    const selectedHRContacts = hrContacts.filter(hr => selectedHRs.includes(hr.id));
+    setSelectedRecipients(selectedHRContacts.map(hr => ({
+      id: hr.id,
+      name: hr.name,
+      email: hr.email,
+      company: hr.company
+    })));
+    setIsEmailModalOpen(true);
+  };
+
+  const handleEmailSubmit = async (emailData) => {
+    setIsEmailSending(true);
+    try {
+      if (selectedRecipients.length === 1) {
+        await emailService.sendEmail(emailData);
+      } else {
+        await emailService.sendBulkEmail(emailData);
+      }
+      
+      // Show success message (you can replace this with a toast notification)
+      alert(`Email sent successfully to ${selectedRecipients.length} recipient(s)!`);
+      setIsEmailModalOpen(false);
+      setSelectedRecipients([]);
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert(`Failed to send email: ${error.message || 'Unknown error'}`);
+    } finally {
+      setIsEmailSending(false);
+    }
+  };
+
+  const handleCloseEmailModal = () => {
+    setIsEmailModalOpen(false);
+    setSelectedRecipients([]);
+  };
+
 
   return (
-    <div className="space-y-6 max-w-full overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
+    <>
+      <div className="space-y-6 max-w-full overflow-x-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
         <div className="mt-4 sm:mt-0 flex space-x-3">
+          {selectedHRs.length > 0 && (
+            <button
+              type="button"
+              onClick={handleSendBulkEmail}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <svg
+                className="-ml-1 mr-2 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              Send Email ({selectedHRs.length})
+            </button>
+          )}
           <button
             type="button"
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -335,6 +419,7 @@ const HRDirectory = () => {
             Add HR Contact
           </button>
         </div>
+      </div>
       </div>
 
       {/* Filters */}
@@ -463,6 +548,9 @@ const HRDirectory = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Resumes Shared
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -508,10 +596,29 @@ const HRDirectory = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900 font-medium">{hr.resumesShared || 0}</div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleSendEmail(hr)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <svg
+                            className="-ml-0.5 mr-1.5 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                          </svg>
+                          Send Email
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
               
               {/* Pagination */}
               <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
@@ -523,8 +630,18 @@ const HRDirectory = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        {/* </div>
+      </div> */}
+
+      {/* Email Modal */}
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={handleCloseEmailModal}
+        recipients={selectedRecipients}
+        onSendEmail={handleEmailSubmit}
+        isLoading={isEmailSending}
+      />
+    </>
   );
 };
 

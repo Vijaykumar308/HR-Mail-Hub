@@ -139,6 +139,74 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
   });
 });
 
+// Send custom email
+exports.sendEmail = catchAsync(async (req, res, next) => {
+  const { recipients, subject, message } = req.body;
+  
+  // Send email to each recipient
+  const emailPromises = recipients.map(recipient => 
+    emailService.sendEmail({
+      to: recipient.email,
+      subject,
+      text: message,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">${subject}</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #666; line-height: 1.6;">${message}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+        </div>
+      `
+    })
+  );
+  
+  await Promise.all(emailPromises);
+  
+  res.status(200).json({
+    status: 'success',
+    message: `Email sent successfully to ${recipients.length} recipient(s)`
+  });
+});
+
+// Send bulk email to multiple recipients
+exports.sendBulkEmail = catchAsync(async (req, res, next) => {
+  const { recipients, subject, message } = req.body;
+  
+  // Send email to each recipient
+  const emailPromises = recipients.map(recipient => 
+    emailService.sendEmail({
+      to: recipient.email,
+      subject,
+      text: message,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">${subject}</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #666; line-height: 1.6;">${message}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+        </div>
+      `
+    })
+  );
+  
+  await Promise.all(emailPromises);
+  
+  res.status(200).json({
+    status: 'success',
+    message: `Bulk email sent successfully to ${recipients.length} recipient(s)`
+  });
+});
+
 // Test resume submission email
 exports.testResumeSubmissionEmail = catchAsync(async (req, res, next) => {
   await emailService.sendResumeSubmissionEmail({

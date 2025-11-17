@@ -1,7 +1,5 @@
 const emailService = require('./src/services/email.service');
 
-// Example usage of the email service
-
 // 1. Send welcome email
 const sendWelcomeEmail = async (user) => {
   try {
