@@ -1,38 +1,30 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useAuth } from '../contexts/AuthContext';
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password, rememberMe })
-      // });
-      // const data = await response.json();
-      
-      // For demo purposes, we'll simulate a successful login
-      // In a real app, you would validate the response from your API
-      if (email && password) {
-        const mockToken = 'mock-jwt-token';
-        onLogin(mockToken);
+      const result = await login(email, password);
+
+      if (result.success) {
         navigate('/dashboard');
       } else {
-        setError('Please enter both email and password');
+        setError(result.error || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
-      setError('Failed to log in. Please check your credentials and try again.');
+      setError('Failed to connect to the server. Please try again later.');
       console.error('Login error:', err);
     }
   };
@@ -60,12 +52,12 @@ const Login = ({ onLogin }) => {
           Please sign in to your account
         </p> */}
 
-         <div className="text-sm mt-6 text-center">
-                  <span className="text-gray-600">Don't have an account? </span>
-                  <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500">
-                    Sign up
-                  </Link>
-                </div>
+        <div className="text-sm mt-6 text-center">
+          <span className="text-gray-600">Don't have an account? </span>
+          <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500">
+            Sign up
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -145,7 +137,7 @@ const Login = ({ onLogin }) => {
                     Forgot your password?
                   </Link>
                 </div>
-               
+
               </div>
             </div>
 
@@ -205,7 +197,7 @@ const Login = ({ onLogin }) => {
 };
 
 Login.propTypes = {
-  onLogin: PropTypes.func.isRequired,
+  // onLogin prop is no longer needed as we use AuthContext
 };
 
 export default Login;
