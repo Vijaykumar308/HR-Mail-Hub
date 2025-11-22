@@ -34,7 +34,7 @@ const Login = () => {
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
           <img
-            className="h-24 w-auto max-w-xs object-contain"
+            className="h-16 sm:h-24 w-auto max-w-xs object-contain"
             src="/logo.png"
             alt="The HR Hub Logo"
             style={{

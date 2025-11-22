@@ -75,12 +75,12 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-4 bg-white border-b border-gray-200">
+      <header className="flex items-center justify-between px-4 sm:px-8 py-4 bg-white border-b border-gray-200">
         <div className="flex items-center gap-2">
           <img
             src="/logo.png"
             alt="The HR Hub Logo"
-            className="h-12 w-auto object-contain"
+            className="h-8 sm:h-12 w-auto object-contain"
             style={{
               maxHeight: '60px',
               width: 'auto',
@@ -90,34 +90,34 @@ export default function Signup() {
               mixBlendMode: 'multiply'
             }}
           />
-          <h1 className="text-2xl font-bold text-gray-900 hidden sm:block">The HR Hub</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 hidden sm:block">The HR Hub</h1>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-gray-600">Already have an account?</p>
-          <Link to="/login" className="px-6 py-2 text-blue-600 font-semibold hover:bg-blue-50 rounded-lg transition">
+          <p className="text-gray-600 text-sm sm:text-base">Already have an account?</p>
+          <Link to="/login" className="px-4 sm:px-6 py-2 text-sm sm:text-base text-blue-600 font-semibold hover:bg-blue-50 rounded-lg transition">
             Log In
           </Link>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-8 py-12 gap-12">
+      <div className="flex flex-col lg:flex-row items-center justify-between max-w-7xl mx-auto px-4 sm:px-8 py-8 lg:py-12 gap-8 lg:gap-12">
         {/* Left Section - Hero */}
-        <div className="flex-1">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">Take Control of Your Job Search.</h2>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+        <div className="flex-1 w-full lg:w-auto text-center lg:text-left">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">Take Control of Your Job Search.</h2>
+          <p className="text-lg sm:text-xl text-gray-600 mb-6 lg:mb-8 leading-relaxed">
             Streamline your job hunt with our all-in-one dashboard. Stop juggling spreadsheets and start landing
             interviews.
           </p>
 
           {/* Features */}
-          <div className="space-y-4">
+          <div className="space-y-4 hidden sm:block">
             {[
               "Track all your applications in one place.",
               "Manage resumes and cover letters.",
               "Prepare for interviews with key insights.",
             ].map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
+              <div key={index} className="flex items-start gap-3 justify-center lg:justify-start">
                 <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
                   <Check className="w-4 h-4 text-blue-600" />
                 </div>
@@ -128,7 +128,7 @@ export default function Signup() {
         </div>
 
         {/* Right Section - Signup Form */}
-        <div className="flex-1">
+        <div className="flex-1 w-full lg:w-auto">
           <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
             <h3 className="text-3xl font-bold text-gray-900 mb-8">Create Your Account</h3>
 
