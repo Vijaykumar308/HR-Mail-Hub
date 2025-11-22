@@ -7,10 +7,14 @@ import './index.css';
 const container = document.getElementById('root');
 const root = createRoot(container);
 
+import { AuthProvider } from './contexts/AuthContext';
+
 root.render(
   <StrictMode>
     <Router>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Router>
   </StrictMode>
 );

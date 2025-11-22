@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { Check } from "lucide-react"
 import { FaGooglePlusG } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -14,6 +15,9 @@ export default function Signup() {
   })
 
   const [errors, setErrors] = useState({})
+
+  const { signup } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -35,26 +39,34 @@ export default function Signup() {
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required"
     if (!formData.email.trim()) newErrors.email = "Email is required"
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Invalid email format"
-    if (!formData.mobile.trim()) newErrors.mobile = "Mobile number is required"
+    // if (!formData.mobile.trim()) newErrors.mobile = "Mobile number is required" // Backend might not require this or expects different field
     if (!formData.password) newErrors.password = "Password is required"
     else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
     return newErrors
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const newErrors = validateForm()
     if (Object.keys(newErrors).length === 0) {
-      alert("Account created successfully!")
-      setFormData({
-        username: "",
-        fullName: "",
-        email: "",
-        mobile: "",
-        password: "",
-        confirmPassword: "",
-      })
+      // Map form data to backend expected format
+      // Backend expects: name, email, password, passwordConfirm
+      const userData = {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        passwordConfirm: formData.confirmPassword,
+      };
+
+      const result = await signup(userData);
+
+      if (result.success) {
+        alert("Account created successfully!");
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: result.error || "Signup failed" });
+      }
     } else {
       setErrors(newErrors)
     }
@@ -121,6 +133,11 @@ export default function Signup() {
             <h3 className="text-3xl font-bold text-gray-900 mb-8">Create Your Account</h3>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {errors.submit && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                  <p className="text-red-700">{errors.submit}</p>
+                </div>
+              )}
               {/* Username and Full Name */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -131,9 +148,8 @@ export default function Signup() {
                     value={formData.username}
                     onChange={handleChange}
                     placeholder="e.g. john.doe"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.username ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.username ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
                 </div>
@@ -145,9 +161,8 @@ export default function Signup() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="Enter your full name"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.fullName ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.fullName ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
                 </div>
@@ -163,9 +178,8 @@ export default function Signup() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="you@example.com"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.email ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.email ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                 </div>
@@ -177,9 +191,8 @@ export default function Signup() {
                     value={formData.mobile}
                     onChange={handleChange}
                     placeholder="(123) 456-7890"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.mobile ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.mobile ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
                 </div>
@@ -195,9 +208,8 @@ export default function Signup() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.password ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.password ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
                 </div>
@@ -209,9 +221,8 @@ export default function Signup() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
-                      errors.confirmPassword ? "border-red-500" : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${errors.confirmPassword ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                      }`}
                   />
                   {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
                 </div>
@@ -239,7 +250,7 @@ export default function Signup() {
                   className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                 >
                   {/* <span>🔍</span> */}
-                  <span className="font-semibold text-gray-700"><FaGooglePlusG size={50}/></span>
+                  <span className="font-semibold text-gray-700"><FaGooglePlusG size={50} /></span>
                 </button>
                 {/* <button
                   type="button"

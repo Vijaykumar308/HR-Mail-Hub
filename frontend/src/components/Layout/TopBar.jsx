@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const TopBar = () => {
+const TopBar = ({ onLogout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
@@ -98,13 +98,16 @@ const TopBar = () => {
                   >
                     Settings
                   </a>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  <button
+                    onClick={() => {
+                      setIsProfileOpen(false);
+                      if (onLogout) onLogout();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                   >
                     Sign out
-                  </a>
+                  </button>
                 </div>
               </div>
             )}
@@ -113,6 +116,12 @@ const TopBar = () => {
       </div>
     </header>
   );
+};
+
+import PropTypes from 'prop-types';
+
+TopBar.propTypes = {
+  onLogout: PropTypes.func,
 };
 
 export default TopBar;

@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout/Layout';
@@ -15,8 +14,16 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import HRDirectoryCreate from './pages/HRDirectoryCreate';
 
+import { useAuth } from './contexts/AuthContext';
+
 // A wrapper for protected routes
-const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
+const ProtectedRoute = ({ redirectPath = '/login' }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a proper loading spinner
+  }
+
   if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
   }
@@ -24,37 +31,19 @@ const ProtectedRoute = ({ isAuthenticated, redirectPath = '/login' }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-
-  // Check if user is already logged in (e.g., from localStorage)
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
- 
-  const handleLogin = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-  };
+  const { logout } = useAuth();
 
   return (
     <>
       <Routes>
         {/* Public routes */}
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/signup" element={<Signup onSignup={handleLogin} />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        
+
         {/* Protected routes */}
-        <Route element={<ProtectedRoute isAuthenticated={isAuthenticated} />}>
-          <Route path="/" element={<Layout onLogout={handleLogout} />}>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Layout onLogout={logout} />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="hr-directory" element={<HRDirectory />} />
