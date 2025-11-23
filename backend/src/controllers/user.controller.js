@@ -1,4 +1,6 @@
 const User = require('../models/user.model');
+const Resume = require('../models/Resume');
+const path = require('path');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const emailService = require('../services/email.service');
@@ -6,7 +8,7 @@ const emailService = require('../services/email.service');
 // Get all users
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find().select('-__v');
-  
+
   res.status(200).json({
     status: 'success',
     results: users.length,
@@ -19,11 +21,11 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 // Get single user
 exports.getUser = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.params.id).select('-__v');
-  
+
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
   }
-  
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -39,10 +41,10 @@ exports.createUser = catchAsync(async (req, res, next) => {
     email: req.body.email,
     // Add other fields as needed
   });
-  
+
   // Remove sensitive data from output
   newUser.__v = undefined;
-  
+
   res.status(201).json({
     status: 'success',
     data: {
@@ -61,13 +63,13 @@ exports.updateUser = catchAsync(async (req, res, next) => {
       runValidators: true,
     }
   );
-  
+
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
   }
-  
+
   user.__v = undefined;
-  
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -79,11 +81,11 @@ exports.updateUser = catchAsync(async (req, res, next) => {
 // Delete user
 exports.deleteUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndDelete(req.params.id);
-  
+
   if (!user) {
     return next(new AppError('No user found with that ID', 404));
   }
-  
+
   res.status(204).json({
     status: 'success',
     data: null,
@@ -103,7 +105,7 @@ exports.testEmail = catchAsync(async (req, res, next) => {
       <p>Timestamp: ${new Date().toISOString()}</p>
     `
   });
-  
+
   res.status(200).json({
     status: 'success',
     message: 'Test email sent successfully to jwvijaykumar@gmail.com'
@@ -117,7 +119,7 @@ exports.testWelcomeEmail = catchAsync(async (req, res, next) => {
     name: 'Test User',
     password: 'TestPass123'
   });
-  
+
   res.status(200).json({
     status: 'success',
     message: 'Welcome email test sent successfully'
@@ -132,7 +134,7 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
     resetToken: 'test-token-123',
     resetUrl: 'http://localhost:3000/reset-password?token=test-token-123'
   });
-  
+
   res.status(200).json({
     status: 'success',
     message: 'Password reset email test sent successfully'
@@ -141,19 +143,31 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
 
 // Send custom email
 exports.sendEmail = catchAsync(async (req, res, next) => {
-  const { recipients, subject, message } = req.body;
-  
+  const { recipients, subject, message, resumeId } = req.body;
+
+  let attachments = [];
+  if (resumeId) {
+    const resume = await Resume.findById(resumeId);
+    if (resume) {
+      attachments.push({
+        filename: resume.originalName,
+        path: path.join(__dirname, '../..', resume.filePath)
+      });
+    }
+  }
+
   // Send email to each recipient
-  const emailPromises = recipients.map(recipient => 
+  const emailPromises = recipients.map(recipient =>
     emailService.sendEmail({
       to: recipient.email,
       subject,
       text: message,
+      attachments,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">${subject}</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #666; line-height: 1.6;">${message}</p>
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${message}</p>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #999; font-size: 12px;">
@@ -164,9 +178,9 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
       `
     })
   );
-  
+
   await Promise.all(emailPromises);
-  
+
   res.status(200).json({
     status: 'success',
     message: `Email sent successfully to ${recipients.length} recipient(s)`
@@ -175,19 +189,31 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
 
 // Send bulk email to multiple recipients
 exports.sendBulkEmail = catchAsync(async (req, res, next) => {
-  const { recipients, subject, message } = req.body;
-  
+  const { recipients, subject, message, resumeId } = req.body;
+
+  let attachments = [];
+  if (resumeId) {
+    const resume = await Resume.findById(resumeId);
+    if (resume) {
+      attachments.push({
+        filename: resume.originalName,
+        path: path.join(__dirname, '../..', resume.filePath)
+      });
+    }
+  }
+
   // Send email to each recipient
-  const emailPromises = recipients.map(recipient => 
+  const emailPromises = recipients.map(recipient =>
     emailService.sendEmail({
       to: recipient.email,
       subject,
       text: message,
+      attachments,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">${subject}</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #666; line-height: 1.6;">${message}</p>
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${message}</p>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #999; font-size: 12px;">
@@ -198,9 +224,9 @@ exports.sendBulkEmail = catchAsync(async (req, res, next) => {
       `
     })
   );
-  
+
   await Promise.all(emailPromises);
-  
+
   res.status(200).json({
     status: 'success',
     message: `Bulk email sent successfully to ${recipients.length} recipient(s)`
@@ -214,7 +240,7 @@ exports.testResumeSubmissionEmail = catchAsync(async (req, res, next) => {
     name: 'Test User',
     resumeName: 'test_resume.pdf'
   });
-  
+
   res.status(200).json({
     status: 'success',
     message: 'Resume submission email test sent successfully'
