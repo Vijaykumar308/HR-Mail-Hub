@@ -35,7 +35,7 @@ api.interceptors.response.use(
     if (error.code === 'ECONNABORTED') {
       console.error('Request timeout. Please check your internet connection.');
     }
-    
+
     // Handle network errors
     if (!error.response) {
       console.error('Network Error: Please check your internet connection');
@@ -44,7 +44,7 @@ api.interceptors.response.use(
 
     // Handle specific status codes
     const { status, data } = error.response;
-    
+
     if (status === 401) {
       // Handle unauthorized access
       console.error('Unauthorized access. Please log in again.');
@@ -73,9 +73,9 @@ export const authAPI = {
       const response = await api.post('/auth/login', { email, password });
       return { success: true, ...response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed. Please try again.' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login failed. Please try again.'
       };
     }
   },
@@ -95,6 +95,44 @@ export const authAPI = {
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to fetch user data';
+    }
+  },
+};
+
+export const templatesAPI = {
+  getAll: async () => {
+    try {
+      const response = await api.get('/templates');
+      return response.data.data.templates;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to fetch templates';
+    }
+  },
+
+  create: async (templateData) => {
+    try {
+      const response = await api.post('/templates', templateData);
+      return response.data.data.template;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to create template';
+    }
+  },
+
+  update: async (id, templateData) => {
+    try {
+      const response = await api.patch(`/templates/${id}`, templateData);
+      return response.data.data.template;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to update template';
+    }
+  },
+
+  delete: async (id) => {
+    try {
+      await api.delete(`/templates/${id}`);
+      return true;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to delete template';
     }
   },
 };
