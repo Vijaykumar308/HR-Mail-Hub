@@ -81,12 +81,12 @@ app.use((req, res, next) => {
 // Helper function to sanitize data
 function sanitizeRequestData(data) {
   if (!data) return data;
-  
+
   const result = Array.isArray(data) ? [] : {};
-  
+
   Object.keys(data).forEach(key => {
     const value = data[key];
-    
+
     if (typeof value === 'string') {
       // Basic XSS protection - remove script tags and dangerous characters
       result[key] = value
@@ -99,7 +99,7 @@ function sanitizeRequestData(data) {
       result[key] = value;
     }
   });
-  
+
   return result;
 }
 
@@ -126,6 +126,7 @@ v1Router.use('/auth', require('./routes/index'));
 v1Router.use('/users', require('./routes/user.routes'));
 v1Router.use('/resumes', require('./routes/resume.routes'));
 v1Router.use('/hr-directory', require('./routes/hrDirectory.routes'));
+v1Router.use('/templates', require('./routes/template.routes'));
 app.use('/api/v1', v1Router);
 
 // 4) Serve static files from uploads directory
