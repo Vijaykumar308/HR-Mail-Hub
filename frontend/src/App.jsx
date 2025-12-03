@@ -16,6 +16,8 @@ import HRDirectoryCreate from './pages/HRDirectoryCreate';
 
 import { useAuth } from './contexts/AuthContext';
 
+import LandingPage from './pages/LandingPage';
+
 // A wrapper for protected routes
 const ProtectedRoute = ({ redirectPath = '/login' }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -37,15 +39,15 @@ function App() {
     <>
       <Routes>
         {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Layout onLogout={logout} />}>
+          <Route element={<Layout onLogout={logout} />}>
             <Route path="dashboard" element={<Dashboard />} />
-            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="hr-directory" element={<HRDirectory />} />
             <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
             <Route path="resumes" element={<MyResumes />} />
