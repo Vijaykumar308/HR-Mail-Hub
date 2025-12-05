@@ -126,7 +126,7 @@ exports.getHRContact = catchAsync(async (req, res, next) => {
 // @access Private
 exports.updateHRContact = catchAsync(async (req, res, next) => {
   // Filter out unwanted fields
-  const allowedFields = ['name', 'email', 'company', 'industry', 'location', 'phone', 'status', 'notes'];
+  const allowedFields = ['name', 'email', 'company', 'website', 'companySize', 'industry', 'location', 'phone', 'status', 'notes'];
   const filteredBody = filterObj(req.body, ...allowedFields);
 
   // Find the HR contact first to check permissions
