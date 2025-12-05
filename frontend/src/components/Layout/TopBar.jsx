@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const TopBar = ({ onLogout, toggleSidebar }) => {
+  const { user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Get user initial or default to 'U'
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -94,7 +99,7 @@ const TopBar = ({ onLogout, toggleSidebar }) => {
               >
                 <span className="sr-only">Open user menu</span>
                 <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium">
-                  U
+                  {userInitial}
                 </div>
               </button>
             </div>
