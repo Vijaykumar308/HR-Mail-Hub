@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import HRDirectoryCreate from './pages/HRDirectoryCreate';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 import { useAuth } from './contexts/AuthContext';
 
@@ -61,6 +62,7 @@ function App() {
         </Route>
       </Routes>
       <ToastContainer />
+      <PWAInstallPrompt />
     </>
   );
 }
