@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', icon: '📊', path: '/dashboard' },
@@ -13,6 +14,10 @@ const navItems = [
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  // Get user initial or default to 'U'
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
     <div className={`
@@ -56,11 +61,11 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center">
           <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-            U
+            {userInitial}
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">User Name</p>
-            <p className="text-xs text-gray-500">user@example.com</p>
+            <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+            <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
       </div>
