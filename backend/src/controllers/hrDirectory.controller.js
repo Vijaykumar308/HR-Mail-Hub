@@ -18,7 +18,7 @@ exports.createHRContact = catchAsync(async (req, res, next) => {
   // TODO: Add createdBy field back when authentication is re-enabled
   // For now, provide a dummy ObjectId to satisfy validation
   const mongoose = require('mongoose');
-  
+
   const hrData = {
     ...req.body,
     createdBy: new mongoose.Types.ObjectId('6914ca949078a9271a1a9059') // Dummy ObjectId
@@ -39,7 +39,7 @@ exports.createHRContact = catchAsync(async (req, res, next) => {
 // @access Private
 exports.getAllHRContacts = catchAsync(async (req, res, next) => {
   // Build query
-  const query = {};
+  const query = { isDeleted: { $ne: true } };
 
   // Filter by status
   if (req.query.status) {
@@ -99,7 +99,7 @@ exports.getAllHRContacts = catchAsync(async (req, res, next) => {
 // @route  GET /api/v1/hr-directory/:id
 // @access Private
 exports.getHRContact = catchAsync(async (req, res, next) => {
-  const query = HRDirectory.findById(req.params.id).populate('createdBy', 'name email');
+  const query = HRDirectory.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).populate('createdBy', 'name email');
 
   // TODO: Add user filtering back when authentication is re-enabled
   // Non-admin users can only see their own contacts
@@ -130,8 +130,8 @@ exports.updateHRContact = catchAsync(async (req, res, next) => {
   const filteredBody = filterObj(req.body, ...allowedFields);
 
   // Find the HR contact first to check permissions
-  const existingHRContact = await HRDirectory.findById(req.params.id);
-  
+  const existingHRContact = await HRDirectory.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
+
   if (!existingHRContact) {
     return next(new AppError('No HR contact found with that ID', 404));
   }
@@ -176,7 +176,10 @@ exports.deleteHRContact = catchAsync(async (req, res, next) => {
   //   return next(new AppError('You can only delete your own HR contacts', 403));
   // }
 
-  await HRDirectory.findByIdAndDelete(req.params.id);
+  // Soft delete
+  hrContact.isDeleted = true;
+  hrContact.deletedAt = Date.now();
+  await hrContact.save();
 
   res.status(204).json({
     status: 'success',
@@ -190,7 +193,7 @@ exports.deleteHRContact = catchAsync(async (req, res, next) => {
 exports.getHRStats = catchAsync(async (req, res, next) => {
   // TODO: Add user filtering back when authentication is re-enabled
   // const matchCondition = req.user.role === 'admin' ? {} : { createdBy: req.user.id };
-  const matchCondition = {};
+  const matchCondition = { isDeleted: { $ne: true } };
 
   const stats = await HRDirectory.aggregate([
     { $match: matchCondition },
@@ -246,7 +249,7 @@ exports.getHRStats = catchAsync(async (req, res, next) => {
 // @route  PATCH /api/v1/hr-directory/:id/increment-resumes
 // @access Private
 exports.incrementResumesShared = catchAsync(async (req, res, next) => {
-  const hrContact = await HRDirectory.findById(req.params.id);
+  const hrContact = await HRDirectory.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
 
   if (!hrContact) {
     return next(new AppError('No HR contact found with that ID', 404));

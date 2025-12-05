@@ -15,7 +15,7 @@ const hrDirectorySchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       validate: {
-        validator: function(email) {
+        validator: function (email) {
           // Basic email validation regex
           return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         },
@@ -67,7 +67,7 @@ const hrDirectorySchema = new mongoose.Schema(
       type: String,
       trim: true,
       validate: {
-        validator: function(phone) {
+        validator: function (phone) {
           // Optional field - if provided, validate phone format
           if (!phone) return true;
           return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
@@ -102,6 +102,15 @@ const hrDirectorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'HR contact must be created by a user']
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      select: false
+    },
+    deletedAt: {
+      type: Date,
+      select: false
     }
   },
   {
@@ -120,12 +129,12 @@ hrDirectorySchema.index({ email: 1 });
 hrDirectorySchema.index({ status: 1 });
 
 // Virtual for full name with company
-hrDirectorySchema.virtual('fullDisplayName').get(function() {
+hrDirectorySchema.virtual('fullDisplayName').get(function () {
   return `${this.name} - ${this.company}`;
 });
 
 // Pre-save middleware to update lastContacted when resumesShared changes
-hrDirectorySchema.pre('save', function(next) {
+hrDirectorySchema.pre('save', function (next) {
   if (this.isModified('resumesShared') && this.resumesShared > 0) {
     this.lastContacted = new Date();
   }
