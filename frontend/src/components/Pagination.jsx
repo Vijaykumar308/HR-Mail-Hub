@@ -1,13 +1,13 @@
 import React from 'react';
 
-const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, className = '' }) => {
+const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, itemsPerPage = 10, className = '' }) => {
   const maxVisiblePages = 5;
   const halfMaxVisiblePages = Math.floor(maxVisiblePages / 2);
-  
+
   // Calculate the range of page numbers to show
   let startPage = Math.max(1, currentPage - halfMaxVisiblePages);
   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-  
+
   // Adjust if we're at the end of the range
   if (endPage - startPage + 1 < maxVisiblePages) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -24,11 +24,10 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, classNa
       <button
         key={number}
         onClick={() => onPageChange(number)}
-        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-          currentPage === number
+        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${currentPage === number
             ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
             : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-        }`}
+          }`}
       >
         {number}
       </button>
@@ -36,7 +35,6 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, classNa
   };
 
   // Calculate the range of results being shown
-  const itemsPerPage = 10; // This should match the itemsPerPage in the parent component
   const startItem = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
   const endItem = totalItems > 0 ? Math.min(currentPage * itemsPerPage, totalItems) : 0;
 
@@ -80,16 +78,15 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, classNa
                 <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
               </svg>
             </button>
-            
+
             {startPage > 1 && (
               <>
                 <button
                   onClick={() => onPageChange(1)}
-                  className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${
-                    1 === currentPage
+                  className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${1 === currentPage
                       ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   1
                 </button>
@@ -100,9 +97,9 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, classNa
                 )}
               </>
             )}
-            
+
             {renderPageNumbers()}
-            
+
             {endPage < totalPages && (
               <>
                 {endPage < totalPages - 1 && (
@@ -112,17 +109,16 @@ const Pagination = ({ currentPage, totalPages, totalItems, onPageChange, classNa
                 )}
                 <button
                   onClick={() => onPageChange(totalPages)}
-                  className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${
-                    totalPages === currentPage
+                  className={`relative inline-flex items-center border px-4 py-2 text-sm font-medium ${totalPages === currentPage
                       ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {totalPages}
                 </button>
               </>
             )}
-            
+
             <button
               onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}

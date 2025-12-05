@@ -61,8 +61,8 @@ const HRDirectory = () => {
       console.log('hrContacts from response:', response.data.hrContacts);
 
       setHrContacts(response.data.hrContacts);
-      setTotal(response.data.total);
-      setPages(response.data.pages);
+      setTotal(response.total);
+      setPages(response.pages);
     } catch (err) {
       console.error('Error loading HR contacts:', err);
       setError('Failed to load HR contacts. Please try again.');
@@ -512,6 +512,7 @@ const HRDirectory = () => {
                 totalPages={pages}
                 totalItems={total}
                 onPageChange={paginate}
+                itemsPerPage={itemsPerPage}
               />
             </div>
           </div>
