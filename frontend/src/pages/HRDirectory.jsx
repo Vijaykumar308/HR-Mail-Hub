@@ -13,7 +13,7 @@ const HRDirectory = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   const [isEmailSending, setIsEmailSending] = useState(false);
-  
+
   // Database state
   const [hrContacts, setHrContacts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,10 +39,10 @@ const HRDirectory = () => {
         page: currentPage,
         limit: itemsPerPage
       });
-      
+
       console.log('API Response:', response);
       console.log('hrContacts from response:', response.data.hrContacts);
-      
+
       setHrContacts(response.data.hrContacts);
       setTotal(response.data.total);
       setPages(response.data.pages);
@@ -87,8 +87,8 @@ const HRDirectory = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleSelectHR = (id) => {
-    setSelectedHRs(prev => 
-      prev.includes(id) 
+    setSelectedHRs(prev =>
+      prev.includes(id)
         ? prev.filter(hrId => hrId !== id)
         : [...prev, id]
     );
@@ -97,7 +97,7 @@ const HRDirectory = () => {
   // Update selectAll state based on current page's selection
   useEffect(() => {
     if (hrContacts && hrContacts.length > 0) {
-      const allCurrentPageSelected = hrContacts && hrContacts.every(item => 
+      const allCurrentPageSelected = hrContacts && hrContacts.every(item =>
         selectedHRs.includes(item._id)
       );
       setSelectAll(allCurrentPageSelected);
@@ -108,7 +108,7 @@ const HRDirectory = () => {
 
   const handleSelectAll = () => {
     const currentPageIds = hrContacts ? hrContacts.map(item => item._id) : [];
-    
+
     if (selectAll) {
       // Deselect all items on the current page
       setSelectedHRs(prev => prev.filter(id => !currentPageIds.includes(id)));
@@ -156,7 +156,7 @@ const HRDirectory = () => {
       } else {
         await emailService.sendBulkEmail(emailData);
       }
-      
+
       // Show success message
       toast.success(`Email sent successfully to ${selectedRecipients.length} recipient(s)!`);
       setIsEmailModalOpen(false);
@@ -180,12 +180,50 @@ const HRDirectory = () => {
       <div className="space-y-6 max-w-full overflow-x-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-2xl font-bold text-gray-900">HR Directory</h2>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          {selectedHRs.length > 0 && (
+          <div className="mt-4 sm:mt-0 flex space-x-3">
+            {selectedHRs.length > 0 && (
+              <button
+                type="button"
+                onClick={handleSendBulkEmail}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                <svg
+                  className="-ml-1 mr-2 h-5 w-5"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                Send Email ({selectedHRs.length})
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={handleSendBulkEmail}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <svg
+                className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Export
+            </button>
+            <button
+              onClick={() => navigate('/hr-directory/create')}
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <svg
                 className="-ml-1 mr-2 h-5 w-5"
@@ -194,54 +232,16 @@ const HRDirectory = () => {
                 fill="currentColor"
                 aria-hidden="true"
               >
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
               </svg>
-              Send Email ({selectedHRs.length})
+              Add HR Contact
             </button>
-          )}
-          
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <svg
-              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Export
-          </button>
-          <button 
-            onClick={() => navigate('/hr-directory/create')}
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-          >
-            <svg
-              className="-ml-1 mr-2 h-5 w-5"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Add HR Contact
-          </button>
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Filters */}
@@ -348,7 +348,7 @@ const HRDirectory = () => {
         {/* Table */}
         {!loading && (
           <div className="inline-block min-w-full py-2 align-middle">
-          <div className="overflow-hidden shadow border-b border-gray-200 sm:rounded-lg">
+            <div className="overflow-x-auto shadow border-b border-gray-200 sm:rounded-lg">
               <div className="bg-white px-4 py-3 border-b border-gray-200 sm:px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
@@ -431,13 +431,12 @@ const HRDirectory = () => {
                         <div className="text-sm text-gray-500">{hr.location}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          hr.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${hr.status === 'active'
+                            ? 'bg-green-100 text-green-800'
                             : hr.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
                           {hr.status.charAt(0).toUpperCase() + hr.status.slice(1)}
                         </span>
                       </td>
@@ -499,20 +498,20 @@ const HRDirectory = () => {
                   ))}
                 </tbody>
               </table>
-              </div>
-              
-              {/* Pagination */}
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <Pagination 
-                  currentPage={currentPage}
-                  totalPages={pages}
-                  totalItems={total}
-                  onPageChange={paginate}
-                />
-              </div>
             </div>
-          )}
-        </div>
+
+            {/* Pagination */}
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pages}
+                totalItems={total}
+                onPageChange={paginate}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Email Modal */}
       <EmailModal

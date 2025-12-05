@@ -50,6 +50,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="hr-directory" element={<HRDirectory />} />
             <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
+            <Route path="hr-directory/edit/:id" element={<HRDirectoryCreate />} />
             <Route path="resumes" element={<MyResumes />} />
             {/* <Route path="send-applications" element={<SendApplications />} /> */}
             <Route path="templates" element={<MessageTemplate />} />
