@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Mail, Briefcase, MapPin, Phone, } from 'lucide-react';
+import { Mail, Briefcase, MapPin, Phone, Globe, Users } from 'lucide-react';
 import { LiaLinkedinIn } from 'react-icons/lia';
 import { toast } from 'react-toastify';
 import hrDirectoryService from '../services/hrDirectoryService';
@@ -14,6 +14,8 @@ const HRDirectoryCreate = () => {
     name: '',
     email: '',
     company: '',
+    website: '',
+    companySize: '',
     industry: '',
     location: '',
     phone: '',
@@ -26,13 +28,25 @@ const HRDirectoryCreate = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const industries = [
-    'Technology',
+    'IT Services',
     'Software Engineering',
-    'Engineering',
-    'E-commerce',
-    'Finance',
     'Healthcare',
+    'Finance',
     'Education',
+    'Manufacturing',
+    'Retail',
+    'Consulting',
+    'Telecommunications',
+    'Banking',
+    'Insurance',
+    'Real Estate',
+    'Hospitality',
+    'Media & Entertainment',
+    'Logistics & Supply Chain',
+    'Pharmaceuticals',
+    'Energy & Utilities',
+    'Government',
+    'Non-Profit',
     'Other'
   ];
 
@@ -47,6 +61,8 @@ const HRDirectoryCreate = () => {
             name: contact.name || '',
             email: contact.email || '',
             company: contact.company || '',
+            website: contact.website || '',
+            companySize: contact.companySize || '',
             industry: contact.industry || '',
             location: contact.location || '',
             phone: contact.phone || '',
@@ -318,6 +334,47 @@ const HRDirectoryCreate = () => {
                   </div>
                 </div>
 
+                {/* Company Website */}
+                <div>
+                  <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Website
+                  </label>
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Globe className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="url"
+                      id="website"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      placeholder="https://example.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Company Size */}
+                <div>
+                  <label htmlFor="companySize" className="block text-sm font-medium text-gray-700 mb-1">
+                    Company Size
+                  </label>
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Users className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="companySize"
+                      name="companySize"
+                      value={formData.companySize}
+                      onChange={handleChange}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                      placeholder="e.g. 50-100 employees"
+                    />
+                  </div>
+                </div>
                 {/* Status */}
                 <div>
                   <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">

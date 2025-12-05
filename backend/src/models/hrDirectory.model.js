@@ -28,6 +28,22 @@ const hrDirectorySchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, 'Company name must have less or equal than 100 characters']
     },
+    website: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          // Optional URL validation
+          if (!v) return true;
+          return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
+        },
+        message: 'Please provide a valid URL'
+      }
+    },
+    companySize: {
+      type: String,
+      trim: true
+    },
     industry: {
       type: String,
       required: [true, 'Industry is required'],
