@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Pagination from '../components/Pagination';
 import EmailModal from '../components/EmailModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 import emailService from '../services/emailService';
 import hrDirectoryService from '../services/hrDirectoryService';
 
@@ -13,6 +14,11 @@ const HRDirectory = () => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [selectedRecipients, setSelectedRecipients] = useState([]);
   const [isEmailSending, setIsEmailSending] = useState(false);
+
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [hrToDelete, setHrToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Database state
   const [hrContacts, setHrContacts] = useState([]);
@@ -71,16 +77,32 @@ const HRDirectory = () => {
     navigate(`/hr-directory/edit/${hr._id}`);
   };
 
-  const handleDeleteHR = async (hr) => {
-    if (window.confirm(`Are you sure you want to delete ${hr.name} from ${hr.company}?`)) {
-      try {
-        await hrDirectoryService.deleteHRContact(hr._id);
-        loadHRContacts(); // Reload the data
-      } catch (error) {
-        console.error('Error deleting HR contact:', error);
-        toast.error('Failed to delete HR contact. Please try again.');
-      }
+  const handleDeleteClick = (hr) => {
+    setHrToDelete(hr);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!hrToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      await hrDirectoryService.deleteHRContact(hrToDelete._id);
+      toast.success('HR contact deleted successfully');
+      loadHRContacts(); // Reload the data
+      setIsDeleteModalOpen(false);
+      setHrToDelete(null);
+    } catch (error) {
+      console.error('Error deleting HR contact:', error);
+      toast.error('Failed to delete HR contact. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setHrToDelete(null);
   };
 
   // Change page
@@ -432,10 +454,10 @@ const HRDirectory = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${hr.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : hr.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
+                          ? 'bg-green-100 text-green-800'
+                          : hr.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
                           }`}>
                           {hr.status.charAt(0).toUpperCase() + hr.status.slice(1)}
                         </span>
@@ -479,7 +501,7 @@ const HRDirectory = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteHR(hr)}
+                          onClick={() => handleDeleteClick(hr)}
                           className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         >
                           <svg
@@ -520,6 +542,18 @@ const HRDirectory = () => {
         recipients={selectedRecipients}
         onSendEmail={handleEmailSubmit}
         isLoading={isEmailSending}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete HR Contact"
+        message={`Are you sure you want to delete ${hrToDelete?.name} from ${hrToDelete?.company}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isDeleting={isDeleting}
       />
 
     </>
