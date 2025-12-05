@@ -56,6 +56,25 @@ exports.getAllHRContacts = catchAsync(async (req, res, next) => {
     query.location = { $regex: req.query.location, $options: 'i' };
   }
 
+  // Filter by company size
+  if (req.query.companySize) {
+    query.companySize = req.query.companySize;
+  }
+
+  // Filter by date range (createdAt)
+  if (req.query.startDate || req.query.endDate) {
+    query.createdAt = {};
+    if (req.query.startDate) query.createdAt.$gte = new Date(req.query.startDate);
+    if (req.query.endDate) query.createdAt.$lte = new Date(req.query.endDate);
+  }
+
+  // Filter by resumes shared count
+  if (req.query.minResumes || req.query.maxResumes) {
+    query.resumesShared = {};
+    if (req.query.minResumes) query.resumesShared.$gte = parseInt(req.query.minResumes);
+    if (req.query.maxResumes) query.resumesShared.$lte = parseInt(req.query.maxResumes);
+  }
+
   // Search by name or company
   if (req.query.search) {
     query.$or = [
@@ -70,14 +89,20 @@ exports.getAllHRContacts = catchAsync(async (req, res, next) => {
   //   query.createdBy = req.user.id;
   // }
 
-  // Execute query with pagination
+  // Execute query with pagination and sorting
   const page = req.query.page * 1 || 1;
   const limit = req.query.limit * 1 || 10;
   const skip = (page - 1) * limit;
 
+  // Dynamic sorting
+  let sort = '-createdAt'; // Default
+  if (req.query.sort) {
+    sort = req.query.sort.split(',').join(' ');
+  }
+
   const hrContacts = await HRDirectory.find(query)
     .populate('createdBy', 'name email')
-    .sort('-createdAt')
+    .sort(sort)
     .skip(skip)
     .limit(limit);
 

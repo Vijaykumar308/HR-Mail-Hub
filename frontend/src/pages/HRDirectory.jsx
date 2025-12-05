@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import Pagination from '../components/Pagination';
 import EmailModal from '../components/EmailModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import FilterDrawer from '../components/FilterDrawer';
+import { Filter } from 'lucide-react';
 import emailService from '../services/emailService';
 import hrDirectoryService from '../services/hrDirectoryService';
 
@@ -28,10 +30,19 @@ const HRDirectory = () => {
   const [pages, setPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
+    search: '',
     industry: '',
     location: '',
-    status: ''
+    status: '',
+    companySize: '',
+    startDate: '',
+    endDate: '',
+    minResumes: '',
+    maxResumes: '',
+    sort: '-createdAt'
   });
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [draftFilters, setDraftFilters] = useState(filters);
 
   const itemsPerPage = 10;
 
@@ -142,10 +153,44 @@ const HRDirectory = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
+    setDraftFilters(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleOpenFilterDrawer = () => {
+    setDraftFilters(filters);
+    setIsFilterDrawerOpen(true);
+  };
+
+  const handleCloseFilterDrawer = () => {
+    setIsFilterDrawerOpen(false);
+  };
+
+  const handleApplyFilters = () => {
+    setFilters(draftFilters);
+    setCurrentPage(1); // Reset to page 1 on filter change
+    setIsFilterDrawerOpen(false);
+  };
+
+  const handleResetFilters = () => {
+    const initialFilters = {
+      search: '',
+      industry: '',
+      location: '',
+      status: '',
+      companySize: '',
+      startDate: '',
+      endDate: '',
+      minResumes: '',
+      maxResumes: '',
+      sort: '-createdAt'
+    };
+    setDraftFilters(initialFilters);
+    setFilters(initialFilters);
+    setCurrentPage(1);
+    setIsFilterDrawerOpen(false);
   };
 
   // Email handler functions
@@ -243,6 +288,14 @@ const HRDirectory = () => {
               Export
             </button>
             <button
+              type="button"
+              onClick={handleOpenFilterDrawer}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+            >
+              <Filter className="-ml-1 mr-2 h-5 w-5 text-gray-500" />
+              Filters
+            </button>
+            <button
               onClick={() => navigate('/hr-directory/create')}
               type="button"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -266,77 +319,7 @@ const HRDirectory = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white shadow rounded-lg p-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <div>
-            <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-              Industry
-            </label>
-            <select
-              id="industry"
-              name="industry"
-              value={filters.industry}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
-            >
-              <option value="">All Industries</option>
-              {industries.map(industry => (
-                <option key={industry} value={industry}>
-                  {industry}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-              Location
-            </label>
-            <select
-              id="location"
-              name="location"
-              value={filters.location}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
-            >
-              <option value="">All Locations</option>
-              {locations.map(location => (
-                <option key={location} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={filters.status}
-              onChange={handleFilterChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md"
-            >
-              <option value="">All Statuses</option>
-              {statuses.map(status => (
-                <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button
-              type="button"
-              onClick={() => setFilters({ industry: '', location: '', status: '' })}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Filters removed from here, moved to Drawer */}
 
       {/* HR Contacts Table */}
       <div className="flex flex-col w-full overflow-x-auto">
@@ -554,6 +537,18 @@ const HRDirectory = () => {
         confirmText="Delete"
         cancelText="Cancel"
         isDeleting={isDeleting}
+      />
+
+      {/* Filter Drawer */}
+      <FilterDrawer
+        isOpen={isFilterDrawerOpen}
+        onClose={handleCloseFilterDrawer}
+        filters={draftFilters}
+        onFilterChange={handleFilterChange}
+        onApply={handleApplyFilters}
+        onReset={handleResetFilters}
+        industries={industries}
+        locations={locations}
       />
 
     </>
