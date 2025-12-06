@@ -226,6 +226,22 @@ const HRDirectory = () => {
 
       // Show success message
       toast.success(`Email sent successfully to ${selectedRecipients.length} recipient(s)!`);
+
+      // Update local state to reflect changes immediately
+      setHrContacts(prevContacts =>
+        prevContacts.map(contact => {
+          const isRecipient = selectedRecipients.some(r => r.id === contact._id);
+          if (isRecipient) {
+            return {
+              ...contact,
+              resumesShared: (contact.resumesShared || 0) + 1,
+              lastContacted: new Date().toISOString()
+            };
+          }
+          return contact;
+        })
+      );
+
       setIsEmailModalOpen(false);
       setSelectedRecipients([]);
     } catch (error) {

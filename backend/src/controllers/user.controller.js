@@ -4,6 +4,8 @@ const path = require('path');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const emailService = require('../services/email.service');
+const HRDirectory = require('../models/hrDirectory.model');
+const config = require('../config/config');
 
 // Get all users
 exports.getAllUsers = catchAsync(async (req, res, next) => {
@@ -145,6 +147,25 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
 exports.sendEmail = catchAsync(async (req, res, next) => {
   const { recipients, subject, message, resumeId } = req.body;
 
+  // Check resume share limit for each recipient
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  for (const recipient of recipients) {
+    if (recipient.id) {
+      const hrContact = await HRDirectory.findById(recipient.id);
+      if (hrContact) {
+        const recentShares = hrContact.resumeShareHistory.filter(
+          share => share.timestamp >= oneWeekAgo
+        ).length;
+
+        if (recentShares >= config.resumeShareLimit.weekly) {
+          return next(new AppError(`Resume share limit reached for ${hrContact.name} (${hrContact.company}). Max ${config.resumeShareLimit.weekly} times per week.`, 400));
+        }
+      }
+    }
+  }
+
   let attachments = [];
   if (resumeId) {
     const resume = await Resume.findById(resumeId);
@@ -180,6 +201,17 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
   );
 
   await Promise.all(emailPromises);
+
+  // Update HR contacts
+  for (const recipient of recipients) {
+    if (recipient.id) {
+      await HRDirectory.findByIdAndUpdate(recipient.id, {
+        $inc: { resumesShared: 1 },
+        $push: { resumeShareHistory: { timestamp: new Date() } },
+        $set: { lastContacted: new Date() }
+      });
+    }
+  }
 
   res.status(200).json({
     status: 'success',
@@ -191,6 +223,25 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
 exports.sendBulkEmail = catchAsync(async (req, res, next) => {
   const { recipients, subject, message, resumeId } = req.body;
 
+  // Check resume share limit for each recipient
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  for (const recipient of recipients) {
+    if (recipient.id) {
+      const hrContact = await HRDirectory.findById(recipient.id);
+      if (hrContact) {
+        const recentShares = hrContact.resumeShareHistory.filter(
+          share => share.timestamp >= oneWeekAgo
+        ).length;
+
+        if (recentShares >= config.resumeShareLimit.weekly) {
+          return next(new AppError(`Resume share limit reached for ${hrContact.name} (${hrContact.company}). Max ${config.resumeShareLimit.weekly} times per week.`, 400));
+        }
+      }
+    }
+  }
+
   let attachments = [];
   if (resumeId) {
     const resume = await Resume.findById(resumeId);
@@ -226,6 +277,17 @@ exports.sendBulkEmail = catchAsync(async (req, res, next) => {
   );
 
   await Promise.all(emailPromises);
+
+  // Update HR contacts
+  for (const recipient of recipients) {
+    if (recipient.id) {
+      await HRDirectory.findByIdAndUpdate(recipient.id, {
+        $inc: { resumesShared: 1 },
+        $push: { resumeShareHistory: { timestamp: new Date() } },
+        $set: { lastContacted: new Date() }
+      });
+    }
+  }
 
   res.status(200).json({
     status: 'success',
