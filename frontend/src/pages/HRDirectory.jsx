@@ -8,9 +8,29 @@ import FilterDrawer from '../components/FilterDrawer';
 import { Filter } from 'lucide-react';
 import emailService from '../services/emailService';
 import hrDirectoryService from '../services/hrDirectoryService';
+import { useSearch } from '../contexts/SearchContext';
+
+// Helper component for highlighting text
+const HighlightText = ({ text, highlight }) => {
+  if (!highlight || !text) return <span>{text}</span>;
+
+  const parts = text.toString().split(new RegExp(`(${highlight})`, 'gi'));
+  return (
+    <span>
+      {parts.map((part, i) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <span key={i} className="bg-yellow-200 animate-pulse">{part}</span>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+};
 
 const HRDirectory = () => {
   const navigate = useNavigate();
+  const { searchTerm } = useSearch();
   const [selectedHRs, setSelectedHRs] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -51,8 +71,14 @@ const HRDirectory = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await hrDirectoryService.getAllHRContacts({
+      // If global search term exists, use it as the search filter
+      const activeFilters = {
         ...filters,
+        search: searchTerm || filters.search
+      };
+
+      const response = await hrDirectoryService.getAllHRContacts({
+        ...activeFilters,
         page: currentPage,
         limit: itemsPerPage
       });
@@ -76,7 +102,7 @@ const HRDirectory = () => {
 
   useEffect(() => {
     loadHRContacts();
-  }, [currentPage, filters]);
+  }, [currentPage, filters, searchTerm]); // Add searchTerm to dependencies
 
   const industries = hrContacts ? [...new Set(hrContacts.map(hr => hr.industry))] : [];
   const locations = hrContacts ? [...new Set(hrContacts.map(hr => hr.location))] : [];
@@ -437,19 +463,29 @@ const HRDirectory = () => {
                         />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{hr.company}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          <HighlightText text={hr.company} highlight={searchTerm} />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{hr.name}</div>
+                        <div className="text-sm text-gray-900">
+                          <HighlightText text={hr.name} highlight={searchTerm} />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{hr.email}</div>
+                        <div className="text-sm text-gray-900">
+                          <HighlightText text={hr.email} highlight={searchTerm} />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{hr.industry}</div>
+                        <div className="text-sm text-gray-500">
+                          <HighlightText text={hr.industry} highlight={searchTerm} />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{hr.location}</div>
+                        <div className="text-sm text-gray-500">
+                          <HighlightText text={hr.location} highlight={searchTerm} />
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${hr.status === 'active'
