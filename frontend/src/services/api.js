@@ -97,6 +97,15 @@ export const authAPI = {
       throw error.response?.data?.message || 'Failed to fetch user data';
     }
   },
+
+  updatePassword: async (passwordData) => {
+    try {
+      const response = await api.patch('/auth/updatePassword', passwordData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.message || 'Failed to update password';
+    }
+  },
 };
 
 export const templatesAPI = {

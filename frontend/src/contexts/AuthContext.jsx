@@ -31,34 +31,34 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authAPI.login(email, password);
-      
+
       if (response?.success && response?.token) {
         localStorage.setItem('token', response.token);
         // Make sure the backend returns user data in the response
-        const userData = response.user || { email };
+        const userData = response.data?.user || response.user || { email };
         setUser(userData);
-        return { 
-          success: true, 
-          user: userData 
+        return {
+          success: true,
+          user: userData
         };
       }
-      
+
       // Handle case where token is missing in response or login failed
-      return { 
-        success: false, 
-        error: response?.error || response?.message || 'Invalid response from server' 
+      return {
+        success: false,
+        error: response?.error || response?.message || 'Invalid response from server'
       };
-      
+
     } catch (error) {
       console.error('Login error:', error);
       // Extract error message from different possible error formats
-      const errorMessage = error.response?.data?.message || 
-                         error.message || 
-                         'Login failed. Please check your credentials and try again.';
-      
-      return { 
-        success: false, 
-        error: errorMessage 
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Login failed. Please check your credentials and try again.';
+
+      return {
+        success: false,
+        error: errorMessage
       };
     }
   };
