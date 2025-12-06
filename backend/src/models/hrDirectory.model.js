@@ -109,6 +109,12 @@ const hrDirectorySchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Resumes shared cannot be negative']
     },
+    resumeShareHistory: [{
+      timestamp: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     notes: {
       type: String,
       trim: true,

@@ -15,6 +15,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import HRDirectoryCreate from './pages/HRDirectoryCreate';
 
 import { useAuth } from './contexts/AuthContext';
+import { SearchProvider } from './contexts/SearchContext';
 
 import LandingPage from './pages/LandingPage';
 
@@ -37,29 +38,31 @@ function App() {
 
   return (
     <>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+      <SearchProvider>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout onLogout={logout} />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="hr-directory" element={<HRDirectory />} />
-            <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
-            <Route path="hr-directory/edit/:id" element={<HRDirectoryCreate />} />
-            <Route path="resumes" element={<MyResumes />} />
-            {/* <Route path="send-applications" element={<SendApplications />} /> */}
-            <Route path="templates" element={<MessageTemplate />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout onLogout={logout} />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="hr-directory" element={<HRDirectory />} />
+              <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
+              <Route path="hr-directory/edit/:id" element={<HRDirectoryCreate />} />
+              <Route path="resumes" element={<MyResumes />} />
+              {/* <Route path="send-applications" element={<SendApplications />} /> */}
+              <Route path="templates" element={<MessageTemplate />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
+        </Routes>
+      </SearchProvider>
       <ToastContainer />
     </>
   );
