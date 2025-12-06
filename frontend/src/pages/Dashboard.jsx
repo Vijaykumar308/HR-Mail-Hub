@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const stats = [
     { name: 'Total Emails Sent', value: '128', change: '+12%', changeType: 'increase' },
     { name: 'Unique HRs Contacted', value: '42', change: '+5%', changeType: 'increase' },
@@ -21,6 +24,7 @@ const Dashboard = () => {
         <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
         <button
           type="button"
+          onClick={() => navigate('/hr-directory')}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
         >
           Send New Application
@@ -36,13 +40,12 @@ const Dashboard = () => {
               <dd className="mt-1 text-3xl font-semibold text-gray-900">{stat.value}</dd>
               <div className="mt-2">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    stat.changeType === 'increase'
-                      ? 'bg-green-100 text-green-800'
-                      : stat.changeType === 'decrease'
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stat.changeType === 'increase'
+                    ? 'bg-green-100 text-green-800'
+                    : stat.changeType === 'decrease'
                       ? 'bg-red-100 text-red-800'
                       : 'bg-blue-100 text-blue-800'
-                  }`}
+                    }`}
                 >
                   {stat.change}
                 </span>
@@ -148,6 +151,7 @@ const Dashboard = () => {
           <div className="px-4 py-5 sm:p-6 space-y-4">
             <button
               type="button"
+              onClick={() => navigate('/hr-directory/create')}
               className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <svg
@@ -167,6 +171,7 @@ const Dashboard = () => {
             </button>
             <button
               type="button"
+              onClick={() => navigate('/templates')}
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <svg
@@ -186,6 +191,7 @@ const Dashboard = () => {
             </button>
             <button
               type="button"
+              onClick={() => navigate('/resumes')}
               className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
             >
               <svg

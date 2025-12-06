@@ -17,6 +17,8 @@ router.post('/send-bulk-email', userController.sendBulkEmail);
 // Protect all routes after this middleware
 router.use(authenticate);
 
+router.patch('/updateMe', userController.updateMe);
+
 // Only admin have permission to access for the below APIs 
 router.use(authorize('admin'));
 

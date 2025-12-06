@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema(
       default: true,
       select: false,
     },
+    notifications: {
+      email: { type: Boolean, default: true },
+      applicationUpdates: { type: Boolean, default: true },
+      responseUpdates: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,
@@ -58,10 +64,15 @@ const userSchema = new mongoose.Schema(
 // Hash the password before saving
 userSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password')) {
+    console.log('Password not modified, skipping hash');
+    return next();
+  }
 
+  console.log('Hashing password...');
   // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
+  console.log('Password hashed');
 
   // Delete passwordConfirm field
   this.passwordConfirm = undefined;

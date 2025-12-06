@@ -1,10 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
+import userService from '../services/userService';
+import { authAPI } from '../services/api';
 
 const Settings = () => {
+  const { user, login } = useAuth(); // We might need to update user context after profile update
   const [activeTab, setActiveTab] = useState('profile');
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: '',
+    email: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -16,9 +23,23 @@ const Settings = () => {
     },
   });
 
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || '',
+        notifications: {
+          ...prev.notifications,
+          ...(user.notifications || {})
+        }
+      }));
+    }
+  }, [user]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -36,10 +57,48 @@ const Settings = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    alert('Settings saved successfully!');
+    setLoading(true);
+
+    try {
+      if (activeTab === 'profile' || activeTab === 'notifications') {
+        const updateData = {
+          name: formData.name,
+          email: formData.email,
+          notifications: formData.notifications
+        };
+
+        await userService.updateMe(updateData);
+        toast.success('Profile updated successfully! Please refresh to see changes.');
+        // Ideally we should update the auth context here, but a refresh works for now
+      } else if (activeTab === 'password') {
+        if (formData.newPassword !== formData.confirmPassword) {
+          toast.error('New passwords do not match');
+          setLoading(false);
+          return;
+        }
+
+        await authAPI.updatePassword({
+          currentPassword: formData.currentPassword,
+          password: formData.newPassword,
+          passwordConfirm: formData.confirmPassword
+        });
+
+        toast.success('Password updated successfully!');
+        setFormData(prev => ({
+          ...prev,
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      toast.error(error.message || 'Failed to update settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabs = [
@@ -65,11 +124,10 @@ const Settings = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`${
-                  activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm flex items-center`}
+                className={`${activeTab === tab.id
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm flex items-center`}
               >
                 <span className="mr-2 text-lg">{tab.icon}</span>
                 {tab.name}
@@ -348,9 +406,10 @@ const Settings = () => {
                 </button>
                 <button
                   type="submit"
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                  disabled={loading}
+                  className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  Save
+                  {loading ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>

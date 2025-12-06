@@ -55,7 +55,45 @@ exports.createUser = catchAsync(async (req, res, next) => {
   });
 });
 
-// Update user
+// Filter object helper
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach(el => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
+
+// Update current user data
+exports.updateMe = catchAsync(async (req, res, next) => {
+  console.log('updateMe called with body:', req.body);
+  console.log('User ID:', req.user.id);
+
+  // 1) Create error if user POSTs password data
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(new AppError('This route is not for password updates. Please use /updateMyPassword.', 400));
+  }
+
+  // 2) Filtered out unwanted fields names that are not allowed to be updated
+  const filteredBody = filterObj(req.body, 'name', 'email', 'notifications');
+  console.log('Filtered body:', filteredBody);
+
+  // 3) Update user document
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true
+  });
+  console.log('Updated user:', updatedUser);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser
+    }
+  });
+});
+
+// Update user (Admin)
 exports.updateUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(
     req.params.id,

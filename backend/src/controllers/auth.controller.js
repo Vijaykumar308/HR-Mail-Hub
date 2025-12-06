@@ -7,7 +7,7 @@ const signToken = auth.signToken;
 // Signup a new user
 exports.signup = catchAsync(async (req, res, next) => {
   console.log('Signup request received:', req.body);
-  
+
   const { name, email, password, passwordConfirm } = req.body;
 
   // 1) Check if all required fields are provided
@@ -71,7 +71,7 @@ exports.login = catchAsync(async (req, res, next) => {
 
   // 3) If everything ok, send token to client
   const token = signToken(user._id);
-  
+
   // 4) Remove password from output
   user.password = undefined;
 
@@ -84,10 +84,40 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
+// Update password
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  console.log('updatePassword called');
+  // 1) Get user from collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  // 2) Check if POSTed current password is correct
+  if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
+    console.log('Incorrect current password');
+    return next(new AppError('Your current password is wrong', 401));
+  }
+
+  // 3) If so, update password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  await user.save();
+  console.log('Password updated successfully');
+
+  // 4) Log user in, send JWT
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
+});
+
 // Get current user
 exports.getMe = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user.id);
-  
+
   res.status(200).json({
     status: 'success',
     data: {
