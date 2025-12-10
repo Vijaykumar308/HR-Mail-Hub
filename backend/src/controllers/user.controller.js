@@ -6,6 +6,7 @@ const AppError = require('../utils/appError');
 const emailService = require('../services/email.service');
 const HRDirectory = require('../models/hrDirectory.model');
 const config = require('../config/config');
+const encryption = require('../utils/encryption');
 
 // Get all users
 exports.getAllUsers = catchAsync(async (req, res, next) => {
@@ -89,6 +90,116 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       user: updatedUser
+    }
+  });
+});
+
+// Update email settings
+exports.updateEmailSettings = catchAsync(async (req, res, next) => {
+  const { service, host, port, secure, auth } = req.body;
+
+  // Prepare update object
+  const emailSettings = {
+    isConfigured: true,
+    service: service || undefined, // Allow purely custom host/port
+    host,
+    port,
+    secure,
+    auth: {
+      user: auth.user,
+    }
+  };
+
+  // Encrypt password if provided
+  if (auth.pass) {
+    emailSettings.auth.pass = encryption.encrypt(auth.pass);
+  } else {
+    // If updating other settings but keeping password
+    const user = await User.findById(req.user.id).select('+emailSettings.auth.pass');
+    if (user.emailSettings && user.emailSettings.auth && user.emailSettings.auth.pass) {
+      emailSettings.auth.pass = user.emailSettings.auth.pass;
+    }
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { emailSettings },
+    { new: true, runValidators: true }
+  );
+
+  // Don't send back the encrypted password
+  if (user.emailSettings && user.emailSettings.auth) {
+    user.emailSettings.auth.pass = undefined;
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      emailSettings: user.emailSettings
+    }
+  });
+});
+
+// Verify email settings
+exports.verifyEmailSettings = catchAsync(async (req, res, next) => {
+  const { service, host, port, secure, auth } = req.body;
+
+  // We need to resolve the password. 
+  // If provided in body, use it. 
+  // If not, fetch from DB (if user has existing config).
+  let password = auth ? auth.pass : undefined;
+
+  if (!password) {
+    const user = await User.findById(req.user.id).select('+emailSettings.auth.pass');
+    if (user.emailSettings && user.emailSettings.auth) {
+      password = user.emailSettings.auth.pass ? encryption.decrypt(user.emailSettings.auth.pass) : undefined;
+    }
+  }
+
+  if (!password) {
+    return next(new AppError('Password is required to verify settings.', 400));
+  }
+
+  // Construct settings object for verification
+  const settingsToVerify = {
+    isConfigured: true,
+    service,
+    host,
+    port,
+    secure,
+    auth: {
+      user: auth ? auth.user : undefined,
+      pass: encryption.encrypt(password) // createTransporter expects encrypted pass to decrypt it, or we can adjust logic.
+      // Wait, emailService.createTransporter decrypts it. 
+      // So if we pass it here, we should pass it in the format createTransporter expects.
+      // Actually, let's look at emailService.createTransporter. It expects `userSettings.auth.pass` to be encrypted.
+    }
+  };
+
+  try {
+    await emailService.verifyConnection(settingsToVerify);
+    res.status(200).json({
+      status: 'success',
+      message: 'Connection verified successfully'
+    });
+  } catch (error) {
+    return next(new AppError(`Connection failed: ${error.message}`, 400));
+  }
+});
+
+// Get email settings
+exports.getEmailSettings = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  const settings = user.emailSettings ? user.emailSettings.toObject() : {};
+
+  if (settings.auth) {
+    settings.auth.pass = undefined; // Never return password
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      emailSettings: settings
     }
   });
 });
@@ -183,6 +294,9 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
 
 // Send custom email
 exports.sendEmail = catchAsync(async (req, res, next) => {
+  // Fetch user settings with password
+  const user = await User.findById(req.user.id).select('+emailSettings.auth.pass');
+
   const { recipients, subject, message, resumeId } = req.body;
 
   // Check resume share limit for each recipient
@@ -235,7 +349,7 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
           </p>
         </div>
       `
-    })
+    }, user ? user.emailSettings : null)
   );
 
   await Promise.all(emailPromises);

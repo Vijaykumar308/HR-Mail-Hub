@@ -18,6 +18,10 @@ router.post('/send-bulk-email', userController.sendBulkEmail);
 router.use(authenticate);
 
 router.patch('/updateMe', userController.updateMe);
+router.put('/email-settings', userController.updateEmailSettings);
+router.post('/email-settings/verify', userController.verifyEmailSettings);
+router.get('/email-settings', userController.getEmailSettings);
+
 
 // Only admin have permission to access for the below APIs 
 router.use(authorize('admin'));

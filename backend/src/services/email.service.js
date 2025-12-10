@@ -3,6 +3,8 @@ const config = require('../config/config');
 const logger = require('../utils/logger');
 const catchAsync = require('../utils/catchAsync');
 
+const encryption = require('../utils/encryption');
+
 class EmailService {
   constructor() {
     this.transporter = null;
@@ -10,7 +12,7 @@ class EmailService {
   }
 
   /**
-   * Initialize the email transporter
+   * Initialize the default email transporter
    */
   initializeTransporter() {
     try {
@@ -39,22 +41,74 @@ class EmailService {
   }
 
   /**
+   * Create a transporter from user settings
+   * @param {Object} userSettings - User email settings
+   * @returns {Object} Nodemailer transporter
+   */
+  createTransporter(userSettings) {
+    if (!userSettings || !userSettings.isConfigured) {
+      return this.transporter;
+    }
+
+    const auth = {
+      user: userSettings.auth.user,
+      pass: userSettings.auth.pass
+        ? encryption.decrypt(userSettings.auth.pass)
+        : undefined
+    };
+
+    const transportConfig = {
+      host: userSettings.host,
+      port: userSettings.port,
+      secure: userSettings.secure,
+      auth,
+    };
+
+    // Handle service shorthand like 'gmail' if host is not explicit or if service is favored
+    if (userSettings.service && userSettings.service !== 'custom') {
+      transportConfig.service = userSettings.service;
+      // Clean up host/port if service handles it, though providing them usually overrides or is ignored
+    }
+
+    return nodemailer.createTransport(transportConfig);
+  }
+
+  /**
+   * Verify connection for a user configuration
+   * @param {Object} userSettings
+   * @returns {Promise}
+   */
+  verifyConnection(userSettings) {
+    return new Promise((resolve, reject) => {
+      const transporter = this.createTransporter(userSettings);
+      transporter.verify((error, success) => {
+        if (error) reject(error);
+        else resolve(success);
+      });
+    });
+  }
+
+  /**
    * Send email using the configured transporter
    * @param {Object} mailOptions - Email options
-   * @param {string} mailOptions.to - Recipient email
-   * @param {string} mailOptions.subject - Email subject
-   * @param {string} mailOptions.text - Plain text content
-   * @param {string} mailOptions.html - HTML content
-   * @param {Array} mailOptions.attachments - Optional attachments
+   * @param {Object} userConfig - Optional user email configuration
    * @returns {Promise} - Promise that resolves with the send result
    */
-  sendEmail = catchAsync(async (mailOptions) => {
-    if (!this.transporter) {
+  sendEmail = catchAsync(async (mailOptions, userConfig = null) => {
+    let transporter = this.transporter;
+    let from = config.email.from;
+
+    if (userConfig && userConfig.isConfigured) {
+      transporter = this.createTransporter(userConfig);
+      from = userConfig.auth.user; // Use user's email as 'from'
+    }
+
+    if (!transporter) {
       throw new Error('Email transporter not initialized');
     }
 
     const emailOptions = {
-      from: config.email.from,
+      from: from,
       to: mailOptions.to,
       subject: mailOptions.subject,
       text: mailOptions.text,
@@ -62,9 +116,9 @@ class EmailService {
       ...mailOptions.attachments && { attachments: mailOptions.attachments }
     };
 
-    const info = await this.transporter.sendMail(emailOptions);
-    
-    logger.info(`Email sent successfully to ${mailOptions.to}`, {
+    const info = await transporter.sendMail(emailOptions);
+
+    logger.info(`Email sent successfully to ${mailOptions.to} via ${userConfig ? 'User SMTP' : 'Default SMTP'}`, {
       messageId: info.messageId,
       subject: mailOptions.subject
     });
@@ -145,7 +199,7 @@ class EmailService {
     const html = this.getHRNotificationEmailTemplate(options);
     const text = `New resume submission: ${options.message}`;
 
-    const promises = options.hrEmails.map(hrEmail => 
+    const promises = options.hrEmails.map(hrEmail =>
       this.sendEmail({
         to: hrEmail,
         subject: options.subject,
