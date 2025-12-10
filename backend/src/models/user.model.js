@@ -53,6 +53,17 @@ const userSchema = new mongoose.Schema(
       responseUpdates: { type: Boolean, default: true },
       weeklyDigest: { type: Boolean, default: true },
     },
+    emailSettings: {
+      isConfigured: { type: Boolean, default: false },
+      service: String, // e.g., 'gmail'
+      host: String,
+      port: Number,
+      secure: { type: Boolean, default: false },
+      auth: {
+        user: String,
+        pass: { type: String, select: false } // Encrypted password, not selected by default
+      }
+    },
   },
   {
     timestamps: true,
