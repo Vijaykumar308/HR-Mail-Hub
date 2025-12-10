@@ -7,6 +7,7 @@ const EmailConfiguration = () => {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [logs, setLogs] = useState([]);
 
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         service: 'custom',
         host: '',
@@ -150,13 +151,13 @@ const EmailConfiguration = () => {
 
                                     {/* Provider Selection */}
                                     <div className="col-span-6">
-                                        <label htmlFor="service" className="block text-sm font-medium text-gray-700">Email Provider</label>
+                                        <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">Email Provider</label>
                                         <select
                                             id="service"
                                             name="service"
                                             value={formData.service}
                                             onChange={handleChange}
-                                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                            className="mt-1 block w-full py-3 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base transition duration-150 ease-in-out sm:text-sm"
                                         >
                                             <option value="gmail">Gmail</option>
                                             <option value="outlook">Outlook / Office 365</option>
@@ -166,31 +167,33 @@ const EmailConfiguration = () => {
                                     </div>
 
                                     <div className="col-span-6 sm:col-span-4">
-                                        <label htmlFor="host" className="block text-sm font-medium text-gray-700">SMTP Host</label>
+                                        <label htmlFor="host" className="block text-sm font-medium text-gray-700 mb-1">SMTP Host</label>
                                         <input
                                             type="text"
                                             name="host"
                                             id="host"
                                             value={formData.host}
                                             onChange={handleChange}
-                                            className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                            className="mt-1 block w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base transition duration-150 ease-in-out sm:text-sm"
+                                            placeholder="e.g., smtp.gmail.com"
                                         />
                                     </div>
 
                                     <div className="col-span-6 sm:col-span-2">
-                                        <label htmlFor="port" className="block text-sm font-medium text-gray-700">Port</label>
+                                        <label htmlFor="port" className="block text-sm font-medium text-gray-700 mb-1">Port</label>
                                         <input
                                             type="number"
                                             name="port"
                                             id="port"
                                             value={formData.port}
                                             onChange={handleChange}
-                                            className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                            className="mt-1 block w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base transition duration-150 ease-in-out sm:text-sm"
+                                            placeholder="587"
                                         />
                                     </div>
 
                                     <div className="col-span-6">
-                                        <div className="flex items-start">
+                                        <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50">
                                             <div className="flex items-center h-5">
                                                 <input
                                                     id="secure"
@@ -198,41 +201,66 @@ const EmailConfiguration = () => {
                                                     type="checkbox"
                                                     checked={formData.secure}
                                                     onChange={handleChange}
-                                                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
+                                                    className="focus:ring-primary-500 h-5 w-5 text-primary-600 border-gray-300 rounded transition duration-150 ease-in-out"
                                                 />
                                             </div>
                                             <div className="ml-3 text-sm">
                                                 <label htmlFor="secure" className="font-medium text-gray-700">Secure Connection (SSL/TLS)</label>
-                                                <p className="text-gray-500">Usually true for port 465, false for 587.</p>
+                                                <p className="text-gray-500 text-xs mt-0.5">Usually required for port 465. Used for encrypted connections.</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="col-span-6">
-                                        <label htmlFor="user" className="block text-sm font-medium text-gray-700">Email Address (Username)</label>
-                                        <input
-                                            type="email"
-                                            name="user"
-                                            id="user"
-                                            value={formData.user}
-                                            onChange={handleChange}
-                                            className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                        />
+                                        <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-1">Email Address (Username)</label>
+                                        <div className="relative rounded-md shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">📧</span>
+                                            </div>
+                                            <input
+                                                type="email"
+                                                name="user"
+                                                id="user"
+                                                value={formData.user}
+                                                onChange={handleChange}
+                                                className="block w-full pl-10 py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base transition duration-150 ease-in-out sm:text-sm"
+                                                placeholder="you@example.com"
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="col-span-6">
-                                        <label htmlFor="pass" className="block text-sm font-medium text-gray-700">Password / App Password</label>
-                                        <input
-                                            type="password"
-                                            name="pass"
-                                            id="pass"
-                                            placeholder={formData.pass ? "••••••••" : "Enter new password"}
-                                            value={formData.pass}
-                                            onChange={handleChange}
-                                            className="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                        />
-                                        <p className="mt-2 text-sm text-red-600">
-                                            ⚠ Do NOT use your regular login password. Use an <strong>App Password</strong>.
+                                        <label htmlFor="pass" className="block text-sm font-medium text-gray-700 mb-1">Password / App Password</label>
+                                        <div className="relative rounded-md shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-500 sm:text-sm">🔒</span>
+                                            </div>
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                name="pass"
+                                                id="pass"
+                                                placeholder={formData.pass ? "••••••••" : "Enter new password"}
+                                                value={formData.pass}
+                                                onChange={handleChange}
+                                                className="block w-full pl-10 pr-10 py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base transition duration-150 ease-in-out sm:text-sm"
+                                            />
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                                                >
+                                                    {showPassword ? (
+                                                        <span role="img" aria-label="hide password">👁️‍🗨️</span>
+                                                    ) : (
+                                                        <span role="img" aria-label="show password">👁️</span>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="mt-2 text-sm text-red-600 flex items-center bg-red-50 p-2 rounded-md">
+                                            <span className="mr-2">⚠</span>
+                                            <span>Do NOT use your regular login password. Use an <strong>App Password</strong>.</span>
                                         </p>
                                     </div>
                                 </div>
