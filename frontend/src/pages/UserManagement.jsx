@@ -133,16 +133,13 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                         {modules.map(module => (
                                             <tr key={module}>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{module.replace(/([A-Z])/g, ' $1').trim()}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <select
-                                                        value={formData.permissions[module]?.access || 'not-set'}
-                                                        onChange={(e) => handlePermissionChange(module, 'access', e.target.value)}
-                                                        className="text-sm border-gray-300 rounded-md shadow-sm border p-1"
-                                                    >
-                                                        <option value="enabled">Enabled</option>
-                                                        <option value="disabled">Disabled</option>
-                                                        <option value="not-set">Not Set</option>
-                                                    </select>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.permissions[module]?.access === 'enabled'}
+                                                        onChange={(e) => handlePermissionChange(module, 'access', e.target.checked ? 'enabled' : 'disabled')}
+                                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                    />
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <input
@@ -152,16 +149,13 @@ const UserModal = ({ isOpen, onClose, user, onSave }) => {
                                                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                                     />
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <select
-                                                        value={formData.permissions[module]?.read || 'none'}
-                                                        onChange={(e) => handlePermissionChange(module, 'read', e.target.value)}
-                                                        className="text-sm border-gray-300 rounded-md shadow-sm border p-1"
-                                                    >
-                                                        <option value="all">All</option>
-                                                        <option value="own">Own</option>
-                                                        <option value="none">None</option>
-                                                    </select>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.permissions[module]?.read === 'all' || formData.permissions[module]?.read === 'own'}
+                                                        onChange={(e) => handlePermissionChange(module, 'read', e.target.checked ? 'all' : 'none')}
+                                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                    />
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <select

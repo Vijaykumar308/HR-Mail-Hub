@@ -4,16 +4,15 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const Sidebar = ({ isOpen, closeSidebar }) => {
   const location = useLocation();
-  const { user, isSuperAdmin } = useAuth(); // isAdmin is not needed here if restricted
+  const { user, isSuperAdmin, hasPermission } = useAuth(); // isAdmin is not needed here if restricted
 
   const navItems = [
     { name: 'Dashboard', icon: '📊', path: '/dashboard' },
     ...(isSuperAdmin ? [{ name: 'Users', icon: '👥', path: '/users' }] : []),
-    { name: 'HR Directory', icon: '📇', path: '/hr-directory' },
-    { name: 'My Resumes', icon: '📄', path: '/resumes' },
-    // { name: 'Send Applications', icon: '✉️', path: '/send-applications' },
-    { name: 'Message Template', icon: '✏️', path: '/templates' },
-    { name: 'Analytics', icon: '📈', path: '/analytics' },
+    ...(hasPermission('hrDirectory', 'read') ? [{ name: 'HR Directory', icon: '📇', path: '/hr-directory' }] : []),
+    ...(hasPermission('resumes', 'read') ? [{ name: 'My Resumes', icon: '📄', path: '/resumes' }] : []),
+    ...(hasPermission('templates', 'read') ? [{ name: 'Message Template', icon: '✏️', path: '/templates' }] : []),
+    ...(hasPermission('analytics', 'read') ? [{ name: 'Analytics', icon: '📈', path: '/analytics' }] : []),
     { name: 'Settings', icon: '⚙️', path: '/settings' },
   ];
 
