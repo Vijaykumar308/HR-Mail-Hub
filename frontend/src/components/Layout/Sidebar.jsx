@@ -2,19 +2,20 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
-const navItems = [
-  { name: 'Dashboard', icon: '📊', path: '/dashboard' },
-  { name: 'HR Directory', icon: '📇', path: '/hr-directory' },
-  { name: 'My Resumes', icon: '📄', path: '/resumes' },
-  // { name: 'Send Applications', icon: '✉️', path: '/send-applications' },
-  { name: 'Message Template', icon: '✏️', path: '/templates' },
-  { name: 'Analytics', icon: '📈', path: '/analytics' },
-  { name: 'Settings', icon: '⚙️', path: '/settings' },
-];
-
 const Sidebar = ({ isOpen, closeSidebar }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isSuperAdmin } = useAuth(); // isAdmin is not needed here if restricted
+
+  const navItems = [
+    { name: 'Dashboard', icon: '📊', path: '/dashboard' },
+    ...(isSuperAdmin ? [{ name: 'Users', icon: '👥', path: '/users' }] : []),
+    { name: 'HR Directory', icon: '📇', path: '/hr-directory' },
+    { name: 'My Resumes', icon: '📄', path: '/resumes' },
+    // { name: 'Send Applications', icon: '✉️', path: '/send-applications' },
+    { name: 'Message Template', icon: '✏️', path: '/templates' },
+    { name: 'Analytics', icon: '📈', path: '/analytics' },
+    { name: 'Settings', icon: '⚙️', path: '/settings' },
+  ];
 
   // Get user initial or default to 'U'
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'U';

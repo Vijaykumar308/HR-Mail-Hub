@@ -92,6 +92,23 @@ export const AuthProvider = ({ children }) => {
         signup,
         logout,
         setError,
+        isAdmin: user?.role === 'admin' || user?.role === 'ADMIN', // Keeping basic admin check if needed for legacy
+        isSuperAdmin: user?.role === 'SUPER_ADMIN',
+        hasPermission: (moduleName, action) => {
+          if (user?.role === 'SUPER_ADMIN') return true;
+
+          if (!user?.permissions?.[moduleName]) return false;
+
+          const perm = user.permissions[moduleName];
+          if (perm.access !== 'enabled') return false;
+
+          if (action === 'create') return !!perm.create;
+          if (action === 'delete') return !!perm.delete;
+          if (action === 'read') return perm.read !== 'none';
+          if (action === 'edit') return perm.edit !== 'none';
+
+          return false;
+        }
       }}
     >
       {!loading && children}

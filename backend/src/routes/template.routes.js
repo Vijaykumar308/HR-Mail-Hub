@@ -1,6 +1,6 @@
 const express = require('express');
 const templateController = require('../controllers/template.controller');
-const { authenticate } = require('../middlewares/auth');
+const { authenticate, checkPermission } = require('../middlewares/auth');
 
 const router = express.Router();
 
@@ -9,12 +9,12 @@ router.use(authenticate);
 
 router
     .route('/')
-    .get(templateController.getAllTemplates)
-    .post(templateController.createTemplate);
+    .get(checkPermission('templates', 'read'), templateController.getAllTemplates)
+    .post(checkPermission('templates', 'create'), templateController.createTemplate);
 
 router
     .route('/:id')
-    .patch(templateController.updateTemplate)
-    .delete(templateController.deleteTemplate);
+    .patch(checkPermission('templates', 'edit'), templateController.updateTemplate)
+    .delete(checkPermission('templates', 'delete'), templateController.deleteTemplate);
 
 module.exports = router;
