@@ -12,13 +12,22 @@ if (!fs.existsSync(uploadDir)) {
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    let dest = uploadDir;
+    // If user is authenticated, create a folder for them
+    if (req.user && req.user._id) {
+      dest = path.join(uploadDir, req.user._id.toString());
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+      }
+    }
+    cb(null, dest);
   },
   filename: (req, file, cb) => {
-    const userId = req.user ? req.user._id : 'unknown';
     const timestamp = Date.now();
     const ext = path.extname(file.originalname);
-    cb(null, `${userId}-${timestamp}${ext}`);
+    // Filename doesn't strictly need user ID prefix anymore if it's in their folder, 
+    // but keeping a unique name is good practice.
+    cb(null, `${timestamp}${ext}`);
   }
 });
 
@@ -53,11 +62,11 @@ const uploadResume = (req, res, next) => {
         return next(err);
       }
     }
-    
+
     if (!req.file) {
       return next(new AppError('No file uploaded', 400));
     }
-    
+
     next();
   });
 };
