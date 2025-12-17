@@ -73,6 +73,10 @@ const hrDirectorySchema = new mongoose.Schema(
         message: 'Please select a valid industry'
       }
     },
+    linkedIn: {
+      type: String,
+      trim: true
+    },
     location: {
       type: String,
       required: [true, 'Location is required'],

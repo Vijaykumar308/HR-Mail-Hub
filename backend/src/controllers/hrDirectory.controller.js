@@ -19,8 +19,12 @@ exports.createHRContact = catchAsync(async (req, res, next) => {
   // For now, provide a dummy ObjectId to satisfy validation
   const mongoose = require('mongoose');
 
+  // Ensure linkedIn field is properly formatted
+  const linkedIn = req.body.linkedIn || req.body.linkedin || '';
+  
   const hrData = {
     ...req.body,
+    linkedIn: linkedIn, // Ensure consistent field name
     createdBy: new mongoose.Types.ObjectId('6914ca949078a9271a1a9059') // Dummy ObjectId
   };
 
@@ -150,9 +154,16 @@ exports.getHRContact = catchAsync(async (req, res, next) => {
 // @route  PATCH /api/v1/hr-directory/:id
 // @access Private
 exports.updateHRContact = catchAsync(async (req, res, next) => {
+  // Handle case-insensitive field names and ensure consistent field naming
+  const body = { ...req.body };
+  if (body.linkedin && !body.linkedIn) {
+    body.linkedIn = body.linkedin;
+    delete body.linkedin;
+  }
+
   // Filter out unwanted fields
-  const allowedFields = ['name', 'email', 'company', 'website', 'companySize', 'industry', 'location', 'phone', 'status', 'notes'];
-  const filteredBody = filterObj(req.body, ...allowedFields);
+  const allowedFields = ['name', 'email', 'company', 'website', 'companySize', 'industry', 'location', 'linkedIn', 'phone', 'status', 'notes'];
+  const filteredBody = filterObj(body, ...allowedFields);
 
   // Find the HR contact first to check permissions
   const existingHRContact = await HRDirectory.findOne({ _id: req.params.id, isDeleted: { $ne: true } });

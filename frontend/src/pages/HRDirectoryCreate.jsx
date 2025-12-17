@@ -19,7 +19,7 @@ const HRDirectoryCreate = () => {
     industry: '',
     location: '',
     phone: '',
-    linkedin: '',
+    linkedIn: '',
     status: 'active'
   });
 
@@ -66,7 +66,7 @@ const HRDirectoryCreate = () => {
             industry: contact.industry || '',
             location: contact.location || '',
             phone: contact.phone || '',
-            linkedin: contact.linkedin || '',
+            linkedIn: contact.linkedIn || '',
             status: contact.status || 'active'
           });
         } catch (error) {
@@ -393,10 +393,10 @@ const HRDirectoryCreate = () => {
                   </select>
                 </div>
 
-                {/* LinkedIn */}
+                {/* linkedIn */}
                 <div className="sm:col-span-2">
-                  <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700 mb-1">
-                    LinkedIn Profile
+                  <label htmlFor="linkedIn" className="block text-sm font-medium text-gray-700 mb-1">
+                    linkedIn Profile
                   </label>
                   <div className="relative rounded-md shadow-sm">
                     <div className="flex">
@@ -405,12 +405,12 @@ const HRDirectoryCreate = () => {
                       </div>
                       <input
                         type="text"
-                        id="linkedin"
-                        name="linkedin"
-                        value={formData.linkedin}
+                        id="linkedIn"
+                        name="linkedIn"
+                        value={formData.linkedIn}
                         onChange={handleChange}
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                        placeholder="https://www.linkedin.com/in/username/"
+                        placeholder="https://www.linkedIn.com/in/username/"
                       />
                     </div>
                   </div>
