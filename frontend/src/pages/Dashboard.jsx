@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const stats = [
     { name: 'Total Emails Sent', value: '128', change: '+12%', changeType: 'increase' },
@@ -21,7 +23,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{isAdmin ? 'Admin Dashboard' : 'Dashboard'}</h2>
         <button
           type="button"
           onClick={() => navigate('/hr-directory')}
@@ -149,6 +151,18 @@ const Dashboard = () => {
             <h3 className="text-lg font-medium leading-6 text-gray-900">Quick Actions</h3>
           </div>
           <div className="px-4 py-5 sm:p-6 space-y-4">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => navigate('/users')}
+                className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 mb-4"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Manage Users
+              </button>
+            )}
             <button
               type="button"
               onClick={() => navigate('/hr-directory/create')}

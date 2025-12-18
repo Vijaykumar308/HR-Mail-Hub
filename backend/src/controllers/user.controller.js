@@ -42,7 +42,10 @@ exports.createUser = catchAsync(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
-    // Add other fields as needed
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
+    role: req.body.role,
+    permissions: req.body.permissions || {}, // Use provided permissions or trigger defaults
   });
 
   // Remove sensitive data from output
