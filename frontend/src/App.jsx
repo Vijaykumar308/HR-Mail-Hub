@@ -13,11 +13,12 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import HRDirectoryCreate from './pages/HRDirectoryCreate';
+import LandingPage from './pages/LandingPage';
+import UserManagement from './pages/UserManagement';
 
 import { useAuth } from './contexts/AuthContext';
 import { SearchProvider } from './contexts/SearchContext';
-
-import LandingPage from './pages/LandingPage';
+import SuperAdminRoute from './components/AdminRoute'; // Filename is AdminRoute.jsx, but export is SuperAdminRoute default
 
 // A wrapper for protected routes
 const ProtectedRoute = ({ redirectPath = '/login' }) => {
@@ -50,6 +51,12 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout onLogout={logout} />}>
               <Route path="dashboard" element={<Dashboard />} />
+
+              {/* Super Admin Routes */}
+              <Route element={<SuperAdminRoute />}>
+                <Route path="users" element={<UserManagement />} />
+              </Route>
+
               <Route path="hr-directory" element={<HRDirectory />} />
               <Route path="hr-directory/create" element={<HRDirectoryCreate />} />
               <Route path="hr-directory/edit/:id" element={<HRDirectoryCreate />} />

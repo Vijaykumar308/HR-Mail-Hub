@@ -1,17 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import hrDirectoryService from '../services/hrDirectoryService';
 
 const HRDirectoryForm = ({ onClose, onSuccess, editingHR = null }) => {
-  const [formData, setFormData] = useState({
-    name: editingHR?.name || '',
-    email: editingHR?.email || '',
-    company: editingHR?.company || '',
-    industry: editingHR?.industry || '',
-    location: editingHR?.location || '',
-    phone: editingHR?.phone || '',
-    status: editingHR?.status || 'active',
-    notes: editingHR?.notes || ''
-  });
+  const [formData, setFormData] = useState(() => ({
+    name: '',
+    email: '',
+    company: '',
+    industry: '',
+    location: '',
+    phone: '',
+    linkedIn: '',
+    status: 'active',
+    notes: ''
+  }));
+
+  // Initialize form data when editingHR changes
+  useEffect(() => {
+    if (editingHR) {
+      setFormData({
+        name: editingHR.name || '',
+        email: editingHR.email || '',
+        company: editingHR.company || '',
+        industry: editingHR.industry || '',
+        location: editingHR.location || '',
+        phone: editingHR.phone || '',
+        linkedIn: editingHR.linkedIn || '',
+        status: editingHR.status || 'active',
+        notes: editingHR.notes || ''
+      });
+    } else {
+      // Reset form for new entry
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        industry: '',
+        location: '',
+        phone: '',
+        linkedIn: '',
+        status: 'active',
+        notes: ''
+      });
+    }
+  }, [editingHR]);
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +79,10 @@ const HRDirectoryForm = ({ onClose, onSuccess, editingHR = null }) => {
       newErrors.name = 'HR name must be at least 2 characters';
     } else if (formData.name.trim().length > 100) {
       newErrors.name = 'HR name must be less than 100 characters';
+    }
+    
+    if (formData.linkedIn && !/^(https?:\/\/)?(www\.)?linkedin\.com\/.*$/i.test(formData.linkedIn)) {
+      newErrors.linkedIn = 'Please enter a valid LinkedIn URL';
     }
 
     if (!formData.email.trim()) {
@@ -259,6 +294,26 @@ const HRDirectoryForm = ({ onClose, onSuccess, editingHR = null }) => {
                   disabled={isSubmitting}
                 />
                 {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+              </div>
+
+              {/* LinkedIn */}
+              <div>
+                <label htmlFor="linkedIn" className="block text-sm font-medium text-gray-700">
+                  LinkedIn
+                </label>
+                <input
+                  type="url"
+                  id="linkedIn"
+                  name="linkedIn"
+                  value={formData.linkedIn}
+                  onChange={handleInputChange}
+                  placeholder="https://linkedin.com/in/username"
+                  className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
+                    errors.linkedIn ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  disabled={isSubmitting}
+                />
+                {errors.linkedIn && <p className="mt-1 text-sm text-red-600">{errors.linkedIn}</p>}
               </div>
 
               {/* Phone */}

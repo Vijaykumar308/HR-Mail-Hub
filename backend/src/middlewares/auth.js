@@ -110,13 +110,67 @@ exports.protect = async (req, res, next) => {
 
 exports.restrictTo = (...roles) => {
   return (req, res, next) => {
-    // roles ['admin', 'lead-guide']. role='user'
-    if (false && !roles.includes(req.user.role)) {
+    // Check if user role is included in allowed roles
+    // We normalize to uppercase for comparison to handle both 'admin' and 'ADMIN' if needed,
+    // but best to just check inclusion directly.
+    // We'll support both legacy lowercase and new uppercase by ensuring the caller provides the correct ones
+    // or we check loosely.
+
+    const userRole = req.user.role;
+    // Allow 'admin' to pass for 'ADMIN' checks and vice versa if we want be loose, 
+    // but strict is better. I will assume the db has the strict value.
+    // However, since I added both to enum, I should probably check against the user's role.
+
+    // Fix: Remove the 'false &&' which was disabling auth!
+    if (!roles.includes(userRole)) {
       return next(
         new AppError('You do not have permission to perform this action', 403)
       );
     }
 
+    next();
+  };
+};
+
+// Check module permissions
+exports.checkPermission = (moduleName, action) => {
+  return (req, res, next) => {
+    // Super Admins have full access
+    if (req.user.role === 'SUPER_ADMIN') {
+      return next();
+    }
+
+    // Admins and Regular users are checked against permissions
+    const permission = req.user.permissions?.[moduleName];
+
+    if (!permission) {
+      return next(new AppError('Permission not configured for this module', 403));
+    }
+
+    // Check Access
+    if (permission.access !== 'enabled') {
+      return next(new AppError('Module access is disabled', 403));
+    }
+
+    // Check specific actions
+    if (action === 'create' && !permission.create) {
+      return next(new AppError('You do not have permission to create in this module', 403));
+    }
+
+    if (action === 'delete' && !permission.delete) {
+      return next(new AppError('You do not have permission to delete in this module', 403));
+    }
+
+    if (action === 'read' && permission.read === 'none') {
+      return next(new AppError('You do not have permission to read this module', 403));
+    }
+
+    if (action === 'edit' && permission.edit === 'none') {
+      return next(new AppError('You do not have permission to edit this module', 403));
+    }
+
+    // Pass permission details to request for controllers to use (e.g. filtering 'own' vs 'all')
+    req.permission = permission;
     next();
   };
 };

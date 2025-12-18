@@ -23,8 +23,8 @@ router.post('/email-settings/verify', userController.verifyEmailSettings);
 router.get('/email-settings', userController.getEmailSettings);
 
 
-// Only admin have permission to access for the below APIs 
-router.use(authorize('admin'));
+// Only SUPER_ADMIN have permission to access for the below APIs 
+router.use(authorize('SUPER_ADMIN'));
 
 router
   .route('/')

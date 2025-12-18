@@ -39,8 +39,38 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     role: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
+      enum: ['user', 'admin', 'REGULAR', 'ADMIN', 'SUPER_ADMIN'],
+      default: 'REGULAR',
+    },
+    permissions: {
+      hrDirectory: {
+        access: { type: String, enum: ['enabled', 'disabled', 'not-set'], default: 'enabled' },
+        create: { type: Boolean, default: false }, // Regulars can't create
+        read: { type: String, enum: ['all', 'own', 'none'], default: 'all' }, // Regulars can view
+        edit: { type: String, enum: ['all', 'own', 'none'], default: 'none' },
+        delete: { type: Boolean, default: false },
+      },
+      templates: {
+        access: { type: String, enum: ['enabled', 'disabled', 'not-set'], default: 'enabled' },
+        create: { type: Boolean, default: true },
+        read: { type: String, enum: ['all', 'own', 'none'], default: 'all' },
+        edit: { type: String, enum: ['all', 'own', 'none'], default: 'own' },
+        delete: { type: Boolean, default: true },
+      },
+      resumes: {
+        access: { type: String, enum: ['enabled', 'disabled', 'not-set'], default: 'enabled' },
+        create: { type: Boolean, default: true },
+        read: { type: String, enum: ['all', 'own', 'none'], default: 'all' },
+        edit: { type: String, enum: ['all', 'own', 'none'], default: 'own' },
+        delete: { type: Boolean, default: true },
+      },
+      analytics: {
+        access: { type: String, enum: ['enabled', 'disabled', 'not-set'], default: 'disabled' }, // Regulars don't need analytics
+        read: { type: String, enum: ['all', 'own', 'none'], default: 'none' },
+        create: { type: Boolean, default: false },
+        edit: { type: String, enum: ['all', 'own', 'none'], default: 'none' },
+        delete: { type: Boolean, default: false },
+      },
     },
     active: {
       type: Boolean,

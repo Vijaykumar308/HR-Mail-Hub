@@ -29,6 +29,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email,
     password,
     passwordConfirm,
+    permissions: {}, // Initialize to trigger schema defaults
   }).catch(err => {
     console.error('Error creating user:', err);
     throw err;
