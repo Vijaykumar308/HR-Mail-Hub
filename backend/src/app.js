@@ -55,11 +55,6 @@ app.use((req, res, next) => {
 
 // Custom NoSQL injection and XSS protection
 app.use((req, res, next) => {
-  // Skip for auth routes to prevent issues with password hashing
-  if (req.originalUrl.startsWith('/api/v1/')) {
-    return next();
-  }
-
   // Sanitize request body
   if (req.body) {
     req.body = sanitizeRequestData(req.body);
