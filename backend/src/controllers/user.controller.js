@@ -297,17 +297,51 @@ exports.testPasswordResetEmail = catchAsync(async (req, res, next) => {
 
 // Send custom email
 exports.sendEmail = catchAsync(async (req, res, next) => {
-  // Fetch user settings with password
-  const user = await User.findById(req.user.id).select('+emailSettings.auth.pass');
+  if (!req.user || (!req.user.id && !req.user._id)) {
+    return next(new AppError('You are not logged in! Please log in to get access.', 401));
+  }
+
+  const userId = req.user.id || req.user._id;
+  const user = await User.findById(userId).select('+emailSettings.auth.pass');
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (!user.emailSettings || user.emailSettings.isConfigured !== true) {
+    console.log('User emailSettings:', user.emailSettings);
+    return next(new AppError('Configure your email settings first to send email.', 400));
+  }
 
   const { recipients, subject, message, resumeId } = req.body;
+
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    return next(new AppError('Please provide at least one recipient.', 400));
+  }
+
+  const emails = recipients
+    .map((r) => {
+      if (typeof r === 'string') return r;
+      if (r && typeof r === 'object') return r.email;
+      return undefined;
+    })
+    .filter(Boolean);
+
+  if (emails.length === 0) {
+    return next(
+      new AppError(
+        'Recipients must be an array of email strings or objects with an email field.',
+        400
+      )
+    );
+  }
 
   // Check resume share limit for each recipient
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   for (const recipient of recipients) {
-    if (recipient.id) {
+    if (recipient && typeof recipient === 'object' && recipient.id) {
       const hrContact = await HRDirectory.findById(recipient.id);
       if (hrContact) {
         const recentShares = hrContact.resumeShareHistory.filter(
@@ -332,18 +366,140 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
     }
   }
 
+  const safeSubject = subject || 'No Subject';
+  const safeMessage = message || '';
+
   // Send email to each recipient
-  const emailPromises = recipients.map(recipient =>
+  const emailPromises = emails.map(to =>
     emailService.sendEmail({
-      to: recipient.email,
-      subject,
-      text: message,
+      to,
+      subject: safeSubject,
+      text: safeMessage,
       attachments,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">${subject}</h2>
+          <h2 style="color: #333;">${safeSubject}</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+        </div>
+      `
+    }, user ? user.emailSettings : null)
+    .catch(err => {
+      console.error('EmailService.sendEmail failed for:', to, err);
+      throw err;
+    })
+  );
+
+  await Promise.all(emailPromises);
+
+  // Update HR contacts
+  for (const recipient of recipients) {
+    if (recipient && typeof recipient === 'object' && recipient.id) {
+      await HRDirectory.findByIdAndUpdate(recipient.id, {
+        $inc: { resumesShared: 1 },
+        $push: { resumeShareHistory: { timestamp: new Date() } },
+        $set: { lastContacted: new Date() }
+      });
+    }
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: `Email sent successfully to ${emails.length} recipient(s)`
+  });
+});
+
+// Send bulk email to multiple recipients
+exports.sendBulkEmail = catchAsync(async (req, res, next) => {
+  if (!req.user || (!req.user.id && !req.user._id)) {
+    return next(new AppError('You are not logged in! Please log in to get access.', 401));
+  }
+
+  const userId = req.user.id || req.user._id;
+  const user = await User.findById(userId).select('+emailSettings.auth.pass');
+
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  if (!user.emailSettings || user.emailSettings.isConfigured !== true) {
+    return next(new AppError('Configure your email settings first to send email.', 400));
+  }
+
+  const { recipients, subject, message, resumeId } = req.body;
+
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    return next(new AppError('Please provide at least one recipient.', 400));
+  }
+
+  const emails = recipients
+    .map((r) => {
+      if (typeof r === 'string') return r;
+      if (r && typeof r === 'object') return r.email;
+      return undefined;
+    })
+    .filter(Boolean);
+
+  if (emails.length === 0) {
+    return next(
+      new AppError(
+        'Recipients must be an array of email strings or objects with an email field.',
+        400
+      )
+    );
+  }
+
+  // Check resume share limit for each recipient
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  for (const recipient of recipients) {
+    if (recipient && typeof recipient === 'object' && recipient.id) {
+      const hrContact = await HRDirectory.findById(recipient.id);
+      if (hrContact) {
+        const recentShares = hrContact.resumeShareHistory.filter(
+          share => share.timestamp >= oneWeekAgo
+        ).length;
+
+        if (recentShares >= config.resumeShareLimit.weekly) {
+          return next(new AppError(`Resume share limit reached for ${hrContact.name} (${hrContact.company}). Max ${config.resumeShareLimit.weekly} times per week.`, 400));
+        }
+      }
+    }
+  }
+
+  let attachments = [];
+  if (resumeId) {
+    const resume = await Resume.findById(resumeId);
+    if (resume) {
+      attachments.push({
+        filename: resume.originalName,
+        path: path.join(__dirname, '../..', resume.filePath)
+      });
+    }
+  }
+
+  const safeSubject = subject || 'No Subject';
+  const safeMessage = message || '';
+
+  // Send email to each recipient
+  const emailPromises = emails.map(to =>
+    emailService.sendEmail({
+      to,
+      subject: safeSubject,
+      text: safeMessage,
+      attachments,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">${safeSubject}</h2>
+          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="color: #999; font-size: 12px;">
@@ -359,7 +515,7 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
 
   // Update HR contacts
   for (const recipient of recipients) {
-    if (recipient.id) {
+    if (recipient && typeof recipient === 'object' && recipient.id) {
       await HRDirectory.findByIdAndUpdate(recipient.id, {
         $inc: { resumesShared: 1 },
         $push: { resumeShareHistory: { timestamp: new Date() } },
@@ -370,83 +526,7 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    message: `Email sent successfully to ${recipients.length} recipient(s)`
-  });
-});
-
-// Send bulk email to multiple recipients
-exports.sendBulkEmail = catchAsync(async (req, res, next) => {
-  const { recipients, subject, message, resumeId } = req.body;
-
-  // Check resume share limit for each recipient
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-  for (const recipient of recipients) {
-    if (recipient.id) {
-      const hrContact = await HRDirectory.findById(recipient.id);
-      if (hrContact) {
-        const recentShares = hrContact.resumeShareHistory.filter(
-          share => share.timestamp >= oneWeekAgo
-        ).length;
-
-        if (recentShares >= config.resumeShareLimit.weekly) {
-          return next(new AppError(`Resume share limit reached for ${hrContact.name} (${hrContact.company}). Max ${config.resumeShareLimit.weekly} times per week.`, 400));
-        }
-      }
-    }
-  }
-
-  let attachments = [];
-  if (resumeId) {
-    const resume = await Resume.findById(resumeId);
-    if (resume) {
-      attachments.push({
-        filename: resume.originalName,
-        path: path.join(__dirname, '../..', resume.filePath)
-      });
-    }
-  }
-
-  // Send email to each recipient
-  const emailPromises = recipients.map(recipient =>
-    emailService.sendEmail({
-      to: recipient.email,
-      subject,
-      text: message,
-      attachments,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">${subject}</h2>
-          <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${message}</p>
-          </div>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #999; font-size: 12px;">
-            This email was sent via HR Mail Hub<br>
-            If you didn't expect this email, you can safely ignore it.
-          </p>
-        </div>
-      `
-    })
-  );
-
-  await Promise.all(emailPromises);
-
-  // Update HR contacts
-  for (const recipient of recipients) {
-    if (recipient.id) {
-      await HRDirectory.findByIdAndUpdate(recipient.id, {
-        $inc: { resumesShared: 1 },
-        $push: { resumeShareHistory: { timestamp: new Date() } },
-        $set: { lastContacted: new Date() }
-      });
-    }
-  }
-
-  res.status(200).json({
-    status: 'success',
-    message: `Bulk email sent successfully to ${recipients.length} recipient(s)`
+    message: `Bulk email sent successfully to ${emails.length} recipient(s)`
   });
 });
 
