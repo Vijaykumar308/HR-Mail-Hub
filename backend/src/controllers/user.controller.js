@@ -378,7 +378,6 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
       attachments,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">${safeSubject}</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>
@@ -390,10 +389,10 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
         </div>
       `
     }, user ? user.emailSettings : null)
-    .catch(err => {
-      console.error('EmailService.sendEmail failed for:', to, err);
-      throw err;
-    })
+      .catch(err => {
+        console.error('EmailService.sendEmail failed for:', to, err);
+        throw err;
+      })
   );
 
   await Promise.all(emailPromises);
@@ -497,7 +496,6 @@ exports.sendBulkEmail = catchAsync(async (req, res, next) => {
       attachments,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">${safeSubject}</h2>
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>

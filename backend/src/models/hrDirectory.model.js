@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const hrDirectorySchema = new mongoose.Schema(
   {
@@ -35,7 +36,7 @@ const hrDirectorySchema = new mongoose.Schema(
         validator: function (v) {
           // Optional URL validation
           if (!v) return true;
-          return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
+          return validator.isURL(v, { protocols: ['http', 'https'], require_protocol: false });
         },
         message: 'Please provide a valid URL'
       }
