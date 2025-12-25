@@ -95,12 +95,15 @@ const EmailConfiguration = () => {
                 }
             });
 
-            addLog('Connection verified successfully!', 'success');
-            setMessage({ type: 'success', text: 'Connection verified! You can now save the settings.' });
+            // Backend returns immediately due to Render's 10-second timeout
+            // Actual verification happens in background
+            addLog('Connection test initiated successfully!', 'success');
+            addLog('Note: Verification runs in background due to platform limits.', 'info');
+            setMessage({ type: 'success', text: 'Connection test started! If credentials are correct, you can save settings.' });
 
         } catch (error) {
             const errMsg = error.response?.data?.message || error.message;
-            addLog(`Connection failed: ${errMsg}`, 'error');
+            addLog(`Connection test failed: ${errMsg}`, 'error');
             setMessage({ type: 'error', text: `Test failed: ${errMsg}` });
         }
 

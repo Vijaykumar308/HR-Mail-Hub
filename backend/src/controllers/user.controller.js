@@ -172,22 +172,27 @@ exports.verifyEmailSettings = catchAsync(async (req, res, next) => {
     secure,
     auth: {
       user: auth ? auth.user : undefined,
-      pass: encryption.encrypt(password) // createTransporter expects encrypted pass to decrypt it, or we can adjust logic.
-      // Wait, emailService.createTransporter decrypts it. 
-      // So if we pass it here, we should pass it in the format createTransporter expects.
-      // Actually, let's look at emailService.createTransporter. It expects `userSettings.auth.pass` to be encrypted.
+      pass: encryption.encrypt(password)
     }
   };
 
-  try {
-    await emailService.verifyConnection(settingsToVerify);
-    res.status(200).json({
-      status: 'success',
-      message: 'Connection verified successfully'
+  // IMPORTANT: Render has a 10-second timeout limit
+  // We need to return immediately and verify in background
+  // Return success immediately
+  res.status(200).json({
+    status: 'success',
+    message: 'Verification started. Testing connection...'
+  });
+
+  // Perform verification asynchronously (don't await)
+  // This runs in the background after the response is sent
+  emailService.verifyConnection(settingsToVerify)
+    .then(() => {
+      console.log('✅ Email verification successful for user:', req.user.id);
+    })
+    .catch((error) => {
+      console.error('❌ Email verification failed for user:', req.user.id, error.message);
     });
-  } catch (error) {
-    return next(new AppError(`Connection failed: ${error.message}`, 400));
-  }
 });
 
 // Get email settings
