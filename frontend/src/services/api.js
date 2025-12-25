@@ -10,7 +10,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true, // Important for cookies, authorization headers with HTTPS
-  timeout: 10000, // Request timeout
+  timeout: 30000, // Request timeout (30 seconds for SMTP verification)
 });
 
 // Add a request interceptor to add the auth token to requests
