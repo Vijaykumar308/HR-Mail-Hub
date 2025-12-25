@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../config/config');
 const logger = require('../utils/logger');
-const catchAsync = require('../utils/catchAsync');
+
 
 const encryption = require('../utils/encryption');
 
@@ -94,7 +94,7 @@ class EmailService {
    * @param {Object} userConfig - Optional user email configuration
    * @returns {Promise} - Promise that resolves with the send result
    */
-  sendEmail = catchAsync(async (mailOptions, userConfig = null) => {
+  sendEmail = async (mailOptions, userConfig = null) => {
     let transporter = this.transporter;
     let from = config.email.from;
 
@@ -124,7 +124,7 @@ class EmailService {
     });
 
     return info;
-  });
+  };
 
   /**
    * Send welcome email to new user
@@ -133,7 +133,7 @@ class EmailService {
    * @param {string} user.name - User name
    * @param {string} user.password - Temporary password (if applicable)
    */
-  sendWelcomeEmail = catchAsync(async (user) => {
+  sendWelcomeEmail = async (user) => {
     const subject = 'Welcome to HR Mail Hub';
     const html = this.getWelcomeEmailTemplate(user);
     const text = `Welcome to HR Mail Hub, ${user.name}! Your account has been successfully created.`;
@@ -144,7 +144,7 @@ class EmailService {
       text,
       html
     });
-  });
+  };
 
   /**
    * Send password reset email
@@ -154,7 +154,7 @@ class EmailService {
    * @param {string} options.resetToken - Password reset token
    * @param {string} options.resetUrl - Password reset URL
    */
-  sendPasswordResetEmail = catchAsync(async (options) => {
+  sendPasswordResetEmail = async (options) => {
     const subject = 'Password Reset Request - HR Mail Hub';
     const html = this.getPasswordResetEmailTemplate(options);
     const text = `Hi ${options.name}, You requested a password reset. Click the link to reset your password: ${options.resetUrl}`;
@@ -165,7 +165,7 @@ class EmailService {
       text,
       html
     });
-  });
+  };
 
   /**
    * Send resume submission confirmation email
@@ -174,7 +174,7 @@ class EmailService {
    * @param {string} options.name - User name
    * @param {string} options.resumeName - Resume file name
    */
-  sendResumeSubmissionEmail = catchAsync(async (options) => {
+  sendResumeSubmissionEmail = async (options) => {
     const subject = 'Resume Submitted Successfully - HR Mail Hub';
     const html = this.getResumeSubmissionEmailTemplate(options);
     const text = `Hi ${options.name}, Your resume "${options.resumeName}" has been successfully submitted.`;
@@ -185,7 +185,7 @@ class EmailService {
       text,
       html
     });
-  });
+  };
 
   /**
    * Send notification email to HR team
@@ -195,7 +195,7 @@ class EmailService {
    * @param {string} options.message - Email message
    * @param {Object} options.applicantInfo - Applicant information
    */
-  sendHRNotificationEmail = catchAsync(async (options) => {
+  sendHRNotificationEmail = async (options) => {
     const html = this.getHRNotificationEmailTemplate(options);
     const text = `New resume submission: ${options.message}`;
 
@@ -209,7 +209,7 @@ class EmailService {
     );
 
     return Promise.all(promises);
-  });
+  };
 
   /**
    * Get welcome email HTML template

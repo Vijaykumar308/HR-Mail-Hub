@@ -47,9 +47,27 @@ api.interceptors.response.use(
 
     if (status === 401) {
       // Handle unauthorized access
-      console.error('Unauthorized access. Please log in again.');
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const requestUrl = error.config?.url || '';
+      const message = (data?.message || '').toLowerCase();
+      const isEmailSendRequest =
+        requestUrl.includes('/api/users/send-email') ||
+        requestUrl.includes('/api/users/send-bulk-email');
+
+      const shouldForceLogout =
+        !isEmailSendRequest &&
+        (requestUrl.includes('/auth/me') ||
+          requestUrl.includes('/auth/refresh') ||
+          message.includes('jwt') ||
+          message.includes('token') ||
+          message.includes('not logged in'));
+
+      if (shouldForceLogout) {
+        console.error('Unauthorized access. Please log in again.');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else {
+        console.error('Unauthorized request (401).');
+      }
     } else if (status === 403) {
       console.error('Forbidden: You do not have permission to access this resource');
     } else if (status === 404) {

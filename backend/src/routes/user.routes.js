@@ -11,11 +11,13 @@ router.get('/test-password-reset', userController.testPasswordResetEmail);
 router.get('/test-resume-submission', userController.testResumeSubmissionEmail);
 
 // Email sending routes (protected)
-router.post('/send-email', userController.sendEmail);
-router.post('/send-bulk-email', userController.sendBulkEmail);
 
 // Protect all routes after this middleware
 router.use(authenticate);
+
+// Email sending routes (protected)
+router.post('/send-email', userController.sendEmail);
+router.post('/send-bulk-email', userController.sendBulkEmail);
 
 router.patch('/updateMe', userController.updateMe);
 router.put('/email-settings', userController.updateEmailSettings);
