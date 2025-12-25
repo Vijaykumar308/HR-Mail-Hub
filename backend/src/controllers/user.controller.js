@@ -381,11 +381,6 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #999; font-size: 12px;">
-            This email was sent via HR Mail Hub<br>
-            If you didn't expect this email, you can safely ignore it.
-          </p>
         </div>
       `
     }, user ? user.emailSettings : null)
@@ -394,6 +389,12 @@ exports.sendEmail = catchAsync(async (req, res, next) => {
         throw err;
       })
   );
+
+  /**<hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p> */
 
   await Promise.all(emailPromises);
 
@@ -499,15 +500,18 @@ exports.sendBulkEmail = catchAsync(async (req, res, next) => {
           <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="color: #999; font-size: 12px;">
-            This email was sent via HR Mail Hub<br>
-            If you didn't expect this email, you can safely ignore it.
-          </p>
         </div>
       `
     }, user ? user.emailSettings : null)
   );
+
+  /**
+   *  <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px;">
+            This email was sent via HR Mail Hub<br>
+            If you didn't expect this email, you can safely ignore it.
+          </p>
+   */
 
   await Promise.all(emailPromises);
 
