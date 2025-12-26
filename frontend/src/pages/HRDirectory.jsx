@@ -436,7 +436,7 @@ const HRDirectory = () => {
                       Email
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Industry
+                      Company Size
                     </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Location
@@ -483,7 +483,7 @@ const HRDirectory = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
-                          <HighlightText text={hr.industry} highlight={searchTerm} />
+                          <HighlightText text={hr.companySize} highlight={searchTerm} />
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
